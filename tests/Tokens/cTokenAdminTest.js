@@ -2,7 +2,6 @@ const {
   address,
   etherMantissa,
   etherUnsigned,
-  etherGasCost
 } = require('../Utils/Ethereum');
 const {
   makeCToken,
@@ -10,9 +9,6 @@ const {
   makeComptroller,
   makeInterestRateModel,
   makeToken,
-  setEtherBalance,
-  getBalances,
-  adjustBalances
 } = require('../Utils/Compound');
 
 describe('CTokenAdmin', () => {
@@ -290,26 +286,26 @@ describe('CTokenAdmin', () => {
 
   describe('_queuePendingImplementation()', () => {
     let oldImplementation;
-    let cCapableDelegate;
+    let cCollateralCapDelegate;
 
     beforeEach(async () => {
       cToken = await makeCToken({admin: cTokenAdmin._address});
       oldImplementation = await call(cToken, 'implementation');
-      cCapableDelegate = await deploy('CCapableErc20Delegate');
+      cCollateralCapDelegate = await deploy('CCollateralCapErc20Delegate');
     });
 
     it('should only be callable by admin', async () => {
-      await expect(send(cTokenAdmin, '_queuePendingImplementation', [cToken._address, cCapableDelegate._address], {from: others})).rejects.toRevert('revert only the admin may call this function');
+      await expect(send(cTokenAdmin, '_queuePendingImplementation', [cToken._address, cCollateralCapDelegate._address], {from: others})).rejects.toRevert('revert only the admin may call this function');
     });
 
     it('should succeed and queue new implementation', async () => {
       await send(cTokenAdmin, 'setBlockTimestamp', [100]);
 
-      expect(await send(cTokenAdmin, '_queuePendingImplementation', [cToken._address, cCapableDelegate._address], {from: admin})).toSucceed();
+      expect(await send(cTokenAdmin, '_queuePendingImplementation', [cToken._address, cCollateralCapDelegate._address], {from: admin})).toSucceed();
 
-      expect(await call(cTokenAdmin, 'implementationQueue', [cToken._address, cCapableDelegate._address])).toEqual('172900'); // 100 + 86400
+      expect(await call(cTokenAdmin, 'implementationQueue', [cToken._address, cCollateralCapDelegate._address])).toEqual('172900'); // 100 + 86400
 
-      await expect(send(cTokenAdmin, '_queuePendingImplementation', [cToken._address, cCapableDelegate._address], {from: admin})).rejects.toRevert('revert already in queue');
+      await expect(send(cTokenAdmin, '_queuePendingImplementation', [cToken._address, cCollateralCapDelegate._address], {from: admin})).rejects.toRevert('revert already in queue');
 
       expect(await call(cToken, 'implementation')).toEqual(oldImplementation);
     });
@@ -317,24 +313,24 @@ describe('CTokenAdmin', () => {
 
   describe('_clearPendingImplementation()', () => {
     let oldImplementation;
-    let cCapableDelegate;
+    let cCollateralCapDelegate;
 
     beforeEach(async () => {
       cToken = await makeCToken({admin: cTokenAdmin._address});
       oldImplementation = await call(cToken, 'implementation');
-      cCapableDelegate = await deploy('CCapableErc20Delegate');
+      cCollateralCapDelegate = await deploy('CCollateralCapErc20Delegate');
     });
 
     it('should only be callable by admin', async () => {
-      await expect(send(cTokenAdmin, '_clearPendingImplementation', [cToken._address, cCapableDelegate._address], {from: others})).rejects.toRevert('revert only the admin may call this function');
+      await expect(send(cTokenAdmin, '_clearPendingImplementation', [cToken._address, cCollateralCapDelegate._address], {from: others})).rejects.toRevert('revert only the admin may call this function');
     });
 
     it('should succeed and clear new implementation', async () => {
       await send(cTokenAdmin, 'setBlockTimestamp', [100]);
 
-      expect(await send(cTokenAdmin, '_clearPendingImplementation', [cToken._address, cCapableDelegate._address], {from: admin})).toSucceed();
+      expect(await send(cTokenAdmin, '_clearPendingImplementation', [cToken._address, cCollateralCapDelegate._address], {from: admin})).toSucceed();
 
-      expect(await call(cTokenAdmin, 'implementationQueue', [cToken._address, cCapableDelegate._address])).toEqual('0');
+      expect(await call(cTokenAdmin, 'implementationQueue', [cToken._address, cCollateralCapDelegate._address])).toEqual('0');
 
       expect(await call(cToken, 'implementation')).toEqual(oldImplementation);
     });
@@ -342,22 +338,22 @@ describe('CTokenAdmin', () => {
 
   describe('_togglePendingImplementation()', () => {
     let oldImplementation;
-    let cCapableDelegate;
+    let cCollateralCapDelegate;
 
     beforeEach(async () => {
       cToken = await makeCToken({admin: cTokenAdmin._address});
       oldImplementation = await call(cToken, 'implementation');
-      cCapableDelegate = await deploy('CCapableErc20Delegate');
+      cCollateralCapDelegate = await deploy('CCollateralCapErc20Delegate');
     });
 
     it('should only be callable by admin', async () => {
-      await expect(send(cTokenAdmin, '_togglePendingImplementation', [cToken._address, cCapableDelegate._address, true, '0x0'], {from: others})).rejects.toRevert('revert only the admin may call this function');
+      await expect(send(cTokenAdmin, '_togglePendingImplementation', [cToken._address, cCollateralCapDelegate._address, true, '0x0'], {from: others})).rejects.toRevert('revert only the admin may call this function');
 
       expect(await call(cToken, 'implementation')).toEqual(oldImplementation);
     });
 
     it('cannot be toggled if not in queue', async () => {
-      await expect(send(cTokenAdmin, '_togglePendingImplementation', [cToken._address, cCapableDelegate._address, true, '0x0'], {from: admin})).rejects.toRevert('revert not in queue');
+      await expect(send(cTokenAdmin, '_togglePendingImplementation', [cToken._address, cCollateralCapDelegate._address, true, '0x0'], {from: admin})).rejects.toRevert('revert not in queue');
 
       expect(await call(cToken, 'implementation')).toEqual(oldImplementation);
     });
@@ -365,13 +361,13 @@ describe('CTokenAdmin', () => {
     it('cannot be toggled if queue not expired', async () => {
       await send(cTokenAdmin, 'setBlockTimestamp', [100]);
 
-      expect(await send(cTokenAdmin, '_queuePendingImplementation', [cToken._address, cCapableDelegate._address], {from: admin})).toSucceed();
+      expect(await send(cTokenAdmin, '_queuePendingImplementation', [cToken._address, cCollateralCapDelegate._address], {from: admin})).toSucceed();
 
-      expect(await call(cTokenAdmin, 'implementationQueue', [cToken._address, cCapableDelegate._address])).toEqual('172900'); // 100 + 86400
+      expect(await call(cTokenAdmin, 'implementationQueue', [cToken._address, cCollateralCapDelegate._address])).toEqual('172900'); // 100 + 86400
 
       await send(cTokenAdmin, 'setBlockTimestamp', [86499]);
 
-      await expect(send(cTokenAdmin, '_togglePendingImplementation', [cToken._address, cCapableDelegate._address, true, '0x0'], {from: admin})).rejects.toRevert('revert queue not expired');
+      await expect(send(cTokenAdmin, '_togglePendingImplementation', [cToken._address, cCollateralCapDelegate._address, true, '0x0'], {from: admin})).rejects.toRevert('revert queue not expired');
 
       expect(await call(cToken, 'implementation')).toEqual(oldImplementation);
     });
@@ -379,17 +375,17 @@ describe('CTokenAdmin', () => {
     it('should succeed and set new implementation', async () => {
       await send(cTokenAdmin, 'setBlockTimestamp', [100]);
 
-      expect(await send(cTokenAdmin, '_queuePendingImplementation', [cToken._address, cCapableDelegate._address], {from: admin})).toSucceed();
+      expect(await send(cTokenAdmin, '_queuePendingImplementation', [cToken._address, cCollateralCapDelegate._address], {from: admin})).toSucceed();
 
-      expect(await call(cTokenAdmin, 'implementationQueue', [cToken._address, cCapableDelegate._address])).toEqual('172900'); // 100 + 86400
+      expect(await call(cTokenAdmin, 'implementationQueue', [cToken._address, cCollateralCapDelegate._address])).toEqual('172900'); // 100 + 86400
 
       await send(cTokenAdmin, 'setBlockTimestamp', [172900]);
 
-      expect(await send(cTokenAdmin, '_togglePendingImplementation', [cToken._address, cCapableDelegate._address, true, '0x0'], {from: admin})).toSucceed();
+      expect(await send(cTokenAdmin, '_togglePendingImplementation', [cToken._address, cCollateralCapDelegate._address, true, '0x0'], {from: admin})).toSucceed();
 
-      expect(await call(cTokenAdmin, 'implementationQueue', [cToken._address, cCapableDelegate._address])).toEqual('0');
+      expect(await call(cTokenAdmin, 'implementationQueue', [cToken._address, cCollateralCapDelegate._address])).toEqual('0');
 
-      expect(await call(cToken, 'implementation')).toEqual(cCapableDelegate._address);
+      expect(await call(cToken, 'implementation')).toEqual(cCollateralCapDelegate._address);
     });
   });
 

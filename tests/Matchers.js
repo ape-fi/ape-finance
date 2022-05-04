@@ -232,27 +232,20 @@ function success(result, comment, reporter) {
   return solo.call(this, log, "a result with no `Failure` event", !log, opts(comment), logReporterFormatter(reporter));
 }
 
-function hasErrorTuple(result, tuple, reporter, cmp=undefined) {
+function hasTuple(result, tuple, cmp=undefined) {
   cmp = cmp || ((x, y) => x.toString() === y.toString());
 
-  const hasErrorResult = hasError.call(this, result[0], tuple[0], reporter);
-  if (!hasErrorResult.pass) {
-    return hasErrorResult;
-  }
-
-  const likeResult = match.call(this, result[1], tuple[1], cmp(result[1], tuple[1]), opts.call(this, 'hasErrorTuple [first tuple]'));
+  const likeResult = match.call(this, result[0], tuple[0], cmp(result[0], tuple[0]), opts.call(this, 'hasTuple [first tuple]'));
   if (!likeResult.pass) {
     return likeResult;
   }
 
-  if (tuple[2] !== undefined) {
-    const like2Result = match.call(this, result[2], tuple[2], cmp(result[2], tuple[2]), opts.call(this, 'hasErrorTuple [second tuple]'));
-    if (!like2Result.pass) {
-      return like2Result;
-    }
+  const like2Result = match.call(this, result[1], tuple[1], cmp(result[1], tuple[1]), opts.call(this, 'hasTuple [first tuple]'));
+  if (!likeResult.pass) {
+    return likeResult;
   }
 
-  return match.call(this, result, tuple, true, opts('hasErrorTuple'));
+  return match.call(this, result, tuple, true, opts('hasTuple'));
 }
 
 // TODO: Improve
@@ -330,8 +323,8 @@ expect.extend({
     return hasFailure.call(this, result, 'COMPTROLLER_REJECTION', info, detail && ComptrollerErr.Error[detail], TokenErr, 'toHaveTrollReject');
   },
 
-  toHaveTrollErrorTuple(result, tuple, cmp=undefined) {
-    return hasErrorTuple.call(this, result, tuple, ComptrollerErr, cmp);
+  toHaveTupleCmp(result, tuple, cmp=undefined) {
+    return hasTuple.call(this, result, tuple, cmp);
   },
 
   toEqualNumber(actual, expected) {

@@ -88,8 +88,8 @@ describe('Comptroller', () => {
 
         expect(
           await calculateSeizeTokens(comptroller, cTokenBorrowed, cTokenCollateral, repayAmount)
-        ).toHaveTrollErrorTuple(
-          ['NO_ERROR', Number(seizeTokens)],
+        ).toHaveTupleCmp(
+          [Number(seizeTokens), 0],
           (x, y) => Math.abs(x - y) < 1e7
         );
       });

@@ -26,7 +26,6 @@ async function preLiquidate(cToken, liquidator, borrower, repayAmount, cTokenCol
   await send(cToken.comptroller, 'setRepayBorrowVerify', [true]);
   await send(cToken.comptroller, 'setSeizeAllowed', [true]);
   await send(cToken.comptroller, 'setSeizeVerify', [true]);
-  await send(cToken.comptroller, 'setFailCalculateSeizeTokens', [false]);
   await send(cToken.underlying, 'harnessSetFailTransferFromAddress', [liquidator, false]);
   await send(cToken.interestRateModel, 'setFailBorrowRate', [false]);
   await send(cTokenCollateral.interestRateModel, 'setFailBorrowRate', [false]);
@@ -50,7 +49,7 @@ async function liquidate(cToken, liquidator, borrower, repayAmount, cTokenCollat
 }
 
 async function seize(cToken, liquidator, borrower, seizeAmount) {
-  return send(cToken, 'seize', [liquidator, borrower, seizeAmount]);
+  return send(cToken, 'seize', [liquidator, borrower, seizeAmount, 0]);
 }
 
 describe('CToken', function () {
@@ -105,16 +104,6 @@ describe('CToken', function () {
 
     it("fails if repayAmount = 0", async () => {
       await expect(liquidateFresh(cToken, liquidator, borrower, 0, cTokenCollateral)).rejects.toRevert('revert invalid amount');
-    });
-
-    it("fails if calculating seize tokens fails and does not adjust balances", async () => {
-      const beforeBalances = await getBalances([cToken, cTokenCollateral], [liquidator, borrower]);
-      await send(cToken.comptroller, 'setFailCalculateSeizeTokens', [true]);
-      await expect(
-        liquidateFresh(cToken, liquidator, borrower, repayAmount, cTokenCollateral)
-      ).rejects.toRevert('revert calculate seize amount failed');
-      const afterBalances = await getBalances([cToken, cTokenCollateral], [liquidator, borrower]);
-      expect(afterBalances).toEqual(beforeBalances);
     });
 
     it("fails if repay fails", async () => {
@@ -228,11 +217,6 @@ describe('CToken', function () {
       const result = await seize(cTokenCollateral, liquidator, borrower, seizeTokens);
       const afterBalances = await getBalances([cTokenCollateral], [liquidator, borrower]);
       expect(result).toSucceed();
-      expect(result).toHaveLog('Transfer', {
-        from: borrower,
-        to: liquidator,
-        amount: seizeTokens.toString()
-      });
       expect(afterBalances).toEqual(await adjustBalances(beforeBalances, [
         [cTokenCollateral, liquidator, 'tokens', seizeTokens],
         [cTokenCollateral, borrower, 'tokens', -seizeTokens]

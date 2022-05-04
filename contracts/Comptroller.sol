@@ -896,7 +896,7 @@ contract Comptroller is ComptrollerV1Storage, ComptrollerInterface, ComptrollerE
      * @param cTokenBorrowed The address of the borrowed cToken
      * @param cTokenCollateral The address of the collateral cToken
      * @param actualRepayAmount The amount of cTokenBorrowed underlying to convert into cTokenCollateral tokens
-     * @return (errorCode, number of cTokenCollateral tokens to be seized in a liquidation)
+     * @return (number of cTokenCollateral tokens to be seized in a liquidation, fee tokens)
      */
     function liquidateCalculateSeizeTokens(
         address cTokenBorrowed,
@@ -915,15 +915,16 @@ contract Comptroller is ComptrollerV1Storage, ComptrollerInterface, ComptrollerE
          *   = actualRepayAmount * (liquidationIncentive * priceBorrowed) / (priceCollateral * exchangeRate)
          */
         uint256 exchangeRateMantissa = CToken(cTokenCollateral).exchangeRateStored(); // Note: reverts on error
-        Exp memory numerator = mul_(
-            Exp({mantissa: liquidationIncentiveMantissa}),
-            Exp({mantissa: priceBorrowedMantissa})
-        );
         Exp memory denominator = mul_(Exp({mantissa: priceCollateralMantissa}), Exp({mantissa: exchangeRateMantissa}));
-        Exp memory ratio = div_(numerator, denominator);
-        uint256 seizeTokens = mul_ScalarTruncate(ratio, actualRepayAmount);
+        Exp memory ratio = div_(Exp({mantissa: priceBorrowedMantissa}), denominator);
+        uint256 base = mul_(actualRepayAmount, ratio);
+        uint256 seizeTokens = mul_ScalarTruncate(Exp({mantissa: base}), liquidationIncentiveMantissa);
 
-        return (uint256(Error.NO_ERROR), seizeTokens);
+        // We take half of the liquidation incentive as fee
+        uint256 feeRatio = div_(sub_(liquidationIncentiveMantissa, mantissaOne), 2);
+        uint256 feeTokens = mul_ScalarTruncate(Exp({mantissa: base}), feeRatio);
+
+        return (seizeTokens, feeTokens);
     }
 
     /*** Admin Functions ***/

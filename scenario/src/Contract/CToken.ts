@@ -33,12 +33,13 @@ export interface CTokenMethods {
   repayBorrowBehalfNative(address: string): Sendable<number>;
   liquidateBorrow(borrower: string, cTokenCollateral: string): Sendable<number>;
   liquidateBorrow(borrower: string, repayAmount: encodedNumber, cTokenCollateral: string): Sendable<number>;
-  seize(liquidator: string, borrower: string, seizeTokens: encodedNumber): Sendable<number>;
+  seize(liquidator: string, borrower: string, seizeTokens: encodedNumber, feeTokens: encodedNumber): Sendable<number>;
   evilSeize(
     treasure: string,
     liquidator: string,
     borrower: string,
-    seizeTokens: encodedNumber
+    seizeTokens: encodedNumber,
+    feeTokens: encodedNumber
   ): Sendable<number>;
   _addReserves(amount: encodedNumber): Sendable<number>;
   _reduceReserves(amount: encodedNumber): Sendable<number>;

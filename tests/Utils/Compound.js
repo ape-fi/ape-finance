@@ -103,26 +103,6 @@ async function makeCToken(opts = {}) {
         ])
       break;
 
-    case 'ccapable':
-      underlying = opts.underlying || await makeToken(opts.underlyingOpts);
-      cDelegatee = await deploy('CCapableErc20Delegate');
-      cDelegator = await deploy('CErc20Delegator',
-        [
-          underlying._address,
-          comptroller._address,
-          interestRateModel._address,
-          exchangeRate,
-          name,
-          symbol,
-          decimals,
-          admin,
-          cDelegatee._address,
-          "0x0"
-        ]
-      );
-      cToken = await saddle.getContractAt('CCapableErc20Delegate', cDelegator._address);
-      break;
-
     case 'ccollateralcap':
       underlying = opts.underlying || await makeToken(opts.underlyingOpts);
       cDelegatee = await deploy('CCollateralCapErc20DelegateHarness');
@@ -142,72 +122,6 @@ async function makeCToken(opts = {}) {
       );
       cToken = await saddle.getContractAt('CCollateralCapErc20DelegateHarness', cDelegator._address);
       version = 1; // ccollateralcap's version is 1
-      break;
-
-    case 'ccollateralcapnointerest':
-      underlying = opts.underlying || await makeToken(opts.underlyingOpts);
-      cDelegatee = await deploy('CCollateralCapErc20NoInterestDelegateHarness');
-      cDelegator = await deploy('CCollateralCapErc20Delegator',
-        [
-          underlying._address,
-          comptroller._address,
-          interestRateModel._address,
-          exchangeRate,
-          name,
-          symbol,
-          decimals,
-          admin,
-          cDelegatee._address,
-          "0x0"
-        ]
-      );
-      cToken = await saddle.getContractAt('CCollateralCapErc20NoInterestDelegateHarness', cDelegator._address);
-      version = 1; // ccollateralcap's version is 1
-      break;
-
-    case 'cslp':
-      underlying = opts.underlying || await makeToken(opts.underlyingOpts);
-      const sushiToken = await deploy('SushiToken');
-      const masterChef = await deploy('MasterChef', [sushiToken._address]);
-      await send(masterChef, 'add', [1, underlying._address]);
-      const sushiBar = await deploy('SushiBar', [sushiToken._address]);
-
-      cDelegatee = await deploy('CSLPDelegateHarness');
-      cDelegator = await deploy('CErc20Delegator',
-        [
-          underlying._address,
-          comptroller._address,
-          interestRateModel._address,
-          exchangeRate,
-          name,
-          symbol,
-          decimals,
-          admin,
-          cDelegatee._address,
-          encodeParameters(['address', 'address', 'uint'], [masterChef._address, sushiBar._address, 0]) // pid = 0
-        ]
-      );
-      cToken = await saddle.getContractAt('CSLPDelegateHarness', cDelegator._address); // XXXS at
-      break;
-
-    case 'cctoken':
-      underlying = opts.underlying || await makeToken({kind: "ctoken"});
-      cDelegatee = await deploy('CCTokenDelegateHarness');
-      cDelegator = await deploy('CErc20Delegator',
-        [
-          underlying._address,
-          comptroller._address,
-          interestRateModel._address,
-          exchangeRate,
-          name,
-          symbol,
-          decimals,
-          admin,
-          cDelegatee._address,
-          "0x0"
-        ]
-      );
-      cToken = await saddle.getContractAt('CCTokenDelegateHarness', cDelegator._address); // XXXS at
       break;
 
     case 'cwrapped':
