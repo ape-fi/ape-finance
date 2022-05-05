@@ -14,19 +14,10 @@ Test "Calculates hypothetical account liquidity"
     Prep Geoff 1250e18 ZRX cZRX
     Mint Geoff 1250e18 cZRX -- Liquidity -> 0.4 * 0.002 * 1250e18 = 1.0e18
     SendMintEth Geoff 2.5e18 cETH -- Liqiuidity -> 0.8 * 1.0 * 2.5e18 = 2.0e18
-    -- Check liquidity is zero when not in any markets
-    Assert Equal (Comptroller Liquidity Geoff) Zero
-    -- Enter ZRX and check liquidity
-    EnterMarkets Geoff cZRX
-    Assert Equal (Comptroller Liquidity Geoff) 1.0e18
-    -- Now let's look at some hypotheticals
-    Assert Equal (Comptroller Hypothetical Geoff Redeems 1000e9 cZRX) 0.2e18 -- 0.4 * 0.002 * -1000e18 = -0.8e18
-    Assert Equal (Comptroller Hypothetical Geoff Borrows 1000e18 cZRX) -1e18 -- 0.002 * -1000e18 = -2e18
-    -- Note, if you're not in an asset, this function returns no effect
-    Assert Equal (Comptroller Hypothetical Geoff Redeems 0.002e9 cETH) 1.0e18 -- 0.8 * 1000.0 * -0.002e18 = -1.6e18
-    Assert Equal (Comptroller Hypothetical Geoff Borrows 0.002e18 cETH) 1.0e18 -- 1000.0 * -0.002e18 = -2e18
-    EnterMarkets Geoff cETH
+    -- Check liquidity
     Assert Equal (Comptroller Liquidity Geoff) 3.0e18
+    -- Now let's look at some hypotheticals
+    -- Note, if you're not in an asset, this function returns no effect
     Assert Equal (Comptroller Hypothetical Geoff Redeems 1000e9 cZRX) 2.2e18 -- 0.4 * 0.002 * -1000e18 = -0.8e18
     Assert Equal (Comptroller Hypothetical Geoff Borrows 1000e18 cZRX) 1e18 -- 0.002 * -1000e18 = -2e18
     Assert Equal (Comptroller Hypothetical Geoff Redeems 2e9 cETH) 1.4e18 -- 0.8 * 1.0 * -2e18 = -1.6e18

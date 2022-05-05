@@ -54,7 +54,7 @@ describe('Spinarama', () => {
 
   describe('#mintRedeem', () => {
     it('should succeed', async () => {
-      const cToken = await makeCToken({supportMarket: true});
+      const cToken = await makeCToken({supportMarket: true, underlyingPrice: 1});
       await send(cToken.underlying, 'harnessSetBalance', [from, 100], {from});
       await send(cToken.underlying, 'approve', [cToken._address, 10], {from});
       await minerStop();
@@ -69,7 +69,7 @@ describe('Spinarama', () => {
 
   describe('#redeemMint', () => {
     it('should succeed', async () => {
-      const cToken = await makeCToken({supportMarket: true});
+      const cToken = await makeCToken({supportMarket: true, underlyingPrice: 1});
       await send(cToken, 'harnessSetTotalSupply', [10]);
       await send(cToken, 'harnessSetExchangeRate', [etherMantissa(1)]);
       await send(cToken, 'harnessSetBalance', [from, 10]);
