@@ -115,15 +115,12 @@ contract BoolComptroller is ComptrollerInterface {
 
     /*** Assets You Are In ***/
 
-    function enterMarkets(address[] calldata _cTokens) external returns (uint256[] memory) {
+    function enterMarkets(address[] calldata _cTokens) external {
         _cTokens;
-        uint256[] memory ret;
-        return ret;
     }
 
-    function exitMarket(address _cToken) external returns (uint256) {
+    function exitMarket(address _cToken) external {
         _cToken;
-        return noError;
     }
 
     function checkMembership(address _account, CToken _cToken) external view returns (bool) {

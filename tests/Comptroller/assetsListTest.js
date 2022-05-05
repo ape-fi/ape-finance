@@ -35,13 +35,8 @@ describe('assetListTest', () => {
   }
 
   async function enterAndCheckMarkets(enterTokens, expectedTokens) {
-    const {reply, receipt} = await both(comptroller, 'enterMarkets', [enterTokens.map(t => t._address)], {from: customer});
+    const {receipt} = await both(comptroller, 'enterMarkets', [enterTokens.map(t => t._address)], {from: customer});
     const assetsIn = await call(comptroller, 'getAssetsIn', [customer]);
-    const expectedErrors = enterTokens.map(_ => 'NO_ERROR');
-
-    reply.forEach((tokenReply, i) => {
-      expect(tokenReply).toHaveTrollError(expectedErrors[i]);
-    });
 
     expect(receipt).toSucceed();
     expect(assetsIn).toEqual(expectedTokens.map(t => t._address));
@@ -61,9 +56,8 @@ describe('assetListTest', () => {
   }
 
   async function exitAndCheckMarkets(exitToken, expectedTokens) {
-    const {reply, receipt} = await both(comptroller, 'exitMarket', [exitToken._address], {from: customer});
+    const {receipt} = await both(comptroller, 'exitMarket', [exitToken._address], {from: customer});
     const assetsIn = await call(comptroller, 'getAssetsIn', [customer]);
-    expect(reply).toHaveTrollError('NO_ERROR');
     expect(assetsIn).toEqual(expectedTokens.map(t => t._address));
     await checkMarkets(expectedTokens);
     return receipt;

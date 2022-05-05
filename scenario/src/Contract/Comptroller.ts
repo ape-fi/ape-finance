@@ -23,8 +23,8 @@ interface ComptrollerMethods {
   _setPriceOracle(string): Sendable<number>
   _setCollateralFactor(string, encodedNumber): Sendable<number>
   _setCloseFactor(encodedNumber): Sendable<number>
-  enterMarkets(markets: string[]): Sendable<number>
-  exitMarket(market: string): Sendable<number>
+  enterMarkets(markets: string[]): Sendable<void>
+  exitMarket(market: string): Sendable<void>
   updateCTokenVersion(cToken: string, version: encodedNumber): Sendable<void>
   fastForward(encodedNumber): Sendable<number>
   _setPendingImplementation(string): Sendable<number>

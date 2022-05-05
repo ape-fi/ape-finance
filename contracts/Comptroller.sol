@@ -99,40 +99,33 @@ contract Comptroller is ComptrollerV1Storage, ComptrollerInterface, ComptrollerE
     /**
      * @notice Add assets to be included in account liquidity calculation
      * @param cTokens The list of addresses of the cToken markets to be enabled
-     * @return Success indicator for whether each corresponding market was entered
      */
-    function enterMarkets(address[] memory cTokens) public returns (uint256[] memory) {
-        uint256 len = cTokens.length;
-
-        uint256[] memory results = new uint256[](len);
-        for (uint256 i = 0; i < len; i++) {
+    function enterMarkets(address[] memory cTokens) public {
+        for (uint256 i = 0; i < cTokens.length; i++) {
             CToken cToken = CToken(cTokens[i]);
 
-            results[i] = uint256(addToMarketInternal(cToken, msg.sender));
+            addToMarketInternal(cToken, msg.sender);
         }
-
-        return results;
     }
 
     /**
-     * @notice Add the market to the borrower's "assets in" for liquidity calculations
+     * @notice Add the market to the account's "assets in" for liquidity calculations
      * @param cToken The market to enter
-     * @param borrower The address of the account to modify
-     * @return Success indicator for whether the market was entered
+     * @param account The address of the account to modify
      */
-    function addToMarketInternal(CToken cToken, address borrower) internal returns (Error) {
+    function addToMarketInternal(CToken cToken, address account) internal {
         Market storage marketToJoin = markets[address(cToken)];
 
         require(marketToJoin.isListed, "market not listed");
 
         if (marketToJoin.version == Version.COLLATERALCAP) {
-            // register collateral for the borrower if the token is CollateralCap version.
-            CCollateralCapErc20Interface(address(cToken)).registerCollateral(borrower);
+            // register collateral for the account if the token is CollateralCap version.
+            CCollateralCapErc20Interface(address(cToken)).registerCollateral(account);
         }
 
-        if (marketToJoin.accountMembership[borrower] == true) {
+        if (marketToJoin.accountMembership[account] == true) {
             // already joined
-            return Error.NO_ERROR;
+            return;
         }
 
         // survived the gauntlet, add to list
@@ -140,12 +133,10 @@ contract Comptroller is ComptrollerV1Storage, ComptrollerInterface, ComptrollerE
         //  this avoids having to iterate through the list for the most common use cases
         //  that is, only when we need to perform liquidity checks
         //  and not whenever we want to check if an account is in a particular market
-        marketToJoin.accountMembership[borrower] = true;
-        accountAssets[borrower].push(cToken);
+        marketToJoin.accountMembership[account] = true;
+        accountAssets[account].push(cToken);
 
-        emit MarketEntered(cToken, borrower);
-
-        return Error.NO_ERROR;
+        emit MarketEntered(cToken, account);
     }
 
     /**
@@ -153,9 +144,8 @@ contract Comptroller is ComptrollerV1Storage, ComptrollerInterface, ComptrollerE
      * @dev Sender must not have an outstanding borrow balance in the asset,
      *  or be providing necessary collateral for an outstanding borrow.
      * @param cTokenAddress The address of the asset to be removed
-     * @return Whether or not the account successfully exited the market
      */
-    function exitMarket(address cTokenAddress) external returns (uint256) {
+    function exitMarket(address cTokenAddress) external {
         CToken cToken = CToken(cTokenAddress);
         /* Get sender tokensHeld and amountOwed underlying from the cToken */
         (uint256 oErr, uint256 tokensHeld, uint256 amountOwed, ) = cToken.getAccountSnapshot(msg.sender);
@@ -175,7 +165,7 @@ contract Comptroller is ComptrollerV1Storage, ComptrollerInterface, ComptrollerE
 
         /* Return true if the sender is not already ‘in’ the market */
         if (!marketToExit.accountMembership[msg.sender]) {
-            return uint256(Error.NO_ERROR);
+            return;
         }
 
         /* Set cToken account membership to false */
@@ -204,8 +194,6 @@ contract Comptroller is ComptrollerV1Storage, ComptrollerInterface, ComptrollerE
         storedList.length--;
 
         emit MarketExited(cToken, msg.sender);
-
-        return uint256(Error.NO_ERROR);
     }
 
     /**
@@ -236,6 +224,17 @@ contract Comptroller is ComptrollerV1Storage, ComptrollerInterface, ComptrollerE
         require(!isCreditAccount(minter, cToken), "credit account cannot mint");
 
         require(isMarketListed(cToken), "market not listed");
+
+        if (!markets[cToken].accountMembership[minter]) {
+            // only cTokens may call mintAllowed if minter not in market
+            require(msg.sender == cToken, "sender must be cToken");
+
+            // add minter to the market
+            addToMarketInternal(CToken(cToken), minter);
+
+            // it should be impossible to break the important invariant
+            assert(markets[cToken].accountMembership[minter]);
+        }
 
         uint256 supplyCap = supplyCaps[cToken];
         // Supply cap of 0 corresponds to unlimited supplying
@@ -364,8 +363,8 @@ contract Comptroller is ComptrollerV1Storage, ComptrollerInterface, ComptrollerE
             // only cTokens may call borrowAllowed if borrower not in market
             require(msg.sender == cToken, "sender must be cToken");
 
-            // attempt to add borrower to the market
-            require(addToMarketInternal(CToken(cToken), borrower) == Error.NO_ERROR, "failed to add market");
+            // add borrower to the market
+            addToMarketInternal(CToken(cToken), borrower);
 
             // it should be impossible to break the important invariant
             assert(markets[cToken].accountMembership[borrower]);
