@@ -86,13 +86,6 @@ contract ComptrollerV1Storage is UnitrollerAdminStorage {
     mapping(address => bool) public mintGuardianPaused;
     mapping(address => bool) public borrowGuardianPaused;
 
-    struct CompMarketState {
-        /// @notice The market's last updated compBorrowIndex or compSupplyIndex
-        uint224 index;
-        /// @notice The block number the index was last updated at
-        uint32 block;
-    }
-
     /// @notice A list of all markets
     CToken[] public allMarkets;
 

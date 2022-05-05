@@ -312,7 +312,8 @@ contract CTokenInterface is CTokenStorage {
     function seize(
         address liquidator,
         address borrower,
-        uint256 seizeTokens
+        uint256 seizeTokens,
+        uint256 feeTokens
     ) external returns (uint256);
 
     /*** Admin Functions ***/

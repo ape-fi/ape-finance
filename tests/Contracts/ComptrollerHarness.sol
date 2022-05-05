@@ -330,7 +330,7 @@ contract BoolComptroller is ComptrollerInterface {
         _cTokenBorrowed;
         _cTokenCollateral;
         _repayAmount;
-        return failCalculateSeizeTokens ? (opaqueError, 0) : (noError, calculatedSeizeTokens);
+        return (calculatedSeizeTokens, 0);
     }
 
     function updateCTokenVersion(address _cToken, ComptrollerV1Storage.Version _version) external {
@@ -402,10 +402,6 @@ contract BoolComptroller is ComptrollerInterface {
 
     function setCalculatedSeizeTokens(uint256 seizeTokens_) public {
         calculatedSeizeTokens = seizeTokens_;
-    }
-
-    function setFailCalculateSeizeTokens(bool shouldFail) public {
-        failCalculateSeizeTokens = shouldFail;
     }
 }
 

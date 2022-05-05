@@ -254,8 +254,8 @@ async function liquidateBorrow(world: World, from: string, cToken: CToken, borro
   return world;
 }
 
-async function seize(world: World, from: string, cToken: CToken, liquidator: string, borrower: string, seizeTokens: NumberV): Promise<World> {
-  let invokation = await invoke(world, cToken.methods.seize(liquidator, borrower, seizeTokens.encode()), from, CTokenErrorReporter);
+async function seize(world: World, from: string, cToken: CToken, liquidator: string, borrower: string, seizeTokens: NumberV, feeTokens: NumberV): Promise<World> {
+  let invokation = await invoke(world, cToken.methods.seize(liquidator, borrower, seizeTokens.encode(), feeTokens.encode()), from, CTokenErrorReporter);
 
   world = addAction(
     world,
@@ -266,8 +266,8 @@ async function seize(world: World, from: string, cToken: CToken, liquidator: str
   return world;
 }
 
-async function evilSeize(world: World, from: string, cToken: CToken, treasure: CToken, liquidator: string, borrower: string, seizeTokens: NumberV): Promise<World> {
-  let invokation = await invoke(world, cToken.methods.evilSeize(treasure._address, liquidator, borrower, seizeTokens.encode()), from, CTokenErrorReporter);
+async function evilSeize(world: World, from: string, cToken: CToken, treasure: CToken, liquidator: string, borrower: string, seizeTokens: NumberV, feeTokens: NumberV): Promise<World> {
+  let invokation = await invoke(world, cToken.methods.evilSeize(treasure._address, liquidator, borrower, seizeTokens.encode(), feeTokens.encode()), from, CTokenErrorReporter);
 
   world = addAction(
     world,
@@ -799,27 +799,28 @@ export function cTokenCommands() {
       (world, from, { borrower, cToken, collateral, repayAmount }) => liquidateBorrow(world, from, cToken, borrower.val, collateral, repayAmount),
       { namePos: 1 }
     ),
-    new Command<{ cToken: CToken, liquidator: AddressV, borrower: AddressV, seizeTokens: NumberV }>(`
+    new Command<{ cToken: CToken, liquidator: AddressV, borrower: AddressV, seizeTokens: NumberV, feeTokens: NumberV }>(`
         #### Seize
 
-        * "CToken <cToken> Seize liquidator:<User> borrower:<User> seizeTokens:<Number>" - Seizes a given number of tokens from a user (to be called from other CToken)
-          * E.g. "CToken cZRX Seize Geoff Torrey 1.0e18"
+        * "CToken <cToken> Seize liquidator:<User> borrower:<User> seizeTokens:<Number> feeTokens:<Number>" - Seizes a given number of tokens from a user (to be called from other CToken)
+          * E.g. "CToken cZRX Seize Geoff Torrey 1.0e18 0"
       `,
       "Seize",
       [
         new Arg("cToken", getCTokenV),
         new Arg("liquidator", getAddressV),
         new Arg("borrower", getAddressV),
-        new Arg("seizeTokens", getNumberV)
+        new Arg("seizeTokens", getNumberV),
+        new Arg("feeTokens", getNumberV)
       ],
-      (world, from, { cToken, liquidator, borrower, seizeTokens }) => seize(world, from, cToken, liquidator.val, borrower.val, seizeTokens),
+      (world, from, { cToken, liquidator, borrower, seizeTokens, feeTokens }) => seize(world, from, cToken, liquidator.val, borrower.val, seizeTokens, feeTokens),
       { namePos: 1 }
     ),
-    new Command<{ cToken: CToken, treasure: CToken, liquidator: AddressV, borrower: AddressV, seizeTokens: NumberV }>(`
+    new Command<{ cToken: CToken, treasure: CToken, liquidator: AddressV, borrower: AddressV, seizeTokens: NumberV, feeTokens: NumberV }>(`
         #### EvilSeize
 
-        * "CToken <cToken> EvilSeize treasure:<Token> liquidator:<User> borrower:<User> seizeTokens:<Number>" - Improperly seizes a given number of tokens from a user
-          * E.g. "CToken cEVL EvilSeize cZRX Geoff Torrey 1.0e18"
+        * "CToken <cToken> EvilSeize treasure:<Token> liquidator:<User> borrower:<User> seizeTokens:<Number> feeTokens:<Number>" - Improperly seizes a given number of tokens from a user
+          * E.g. "CToken cEVL EvilSeize cZRX Geoff Torrey 1.0e18 0"
       `,
       "EvilSeize",
       [
@@ -827,9 +828,10 @@ export function cTokenCommands() {
         new Arg("treasure", getCTokenV),
         new Arg("liquidator", getAddressV),
         new Arg("borrower", getAddressV),
-        new Arg("seizeTokens", getNumberV)
+        new Arg("seizeTokens", getNumberV),
+        new Arg("feeTokens", getNumberV)
       ],
-      (world, from, { cToken, treasure, liquidator, borrower, seizeTokens }) => evilSeize(world, from, cToken, treasure, liquidator.val, borrower.val, seizeTokens),
+      (world, from, { cToken, treasure, liquidator, borrower, seizeTokens, feeTokens }) => evilSeize(world, from, cToken, treasure, liquidator.val, borrower.val, seizeTokens, feeTokens),
       { namePos: 1 }
     ),
     new Command<{ cToken: CToken, amount: NumberV }>(`

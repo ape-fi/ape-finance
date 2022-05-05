@@ -183,7 +183,7 @@ describe('CToken', function () {
   describe('gulp', () => {
     let cToken;
     beforeEach(async () => {
-      cToken = await makeCToken({kind: 'ccapable'});
+      cToken = await makeCToken({kind: 'ccollateralcap'});
     });
 
     it('absorbs excess cash into reserves', async () => {

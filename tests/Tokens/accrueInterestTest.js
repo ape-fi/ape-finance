@@ -124,37 +124,5 @@ describe('CToken', () => {
       expect(await call(cToken, 'totalBorrows')).toEqualNumber(expectedTotalBorrows);
       expect(await call(cToken, 'totalReserves')).toEqualNumber(expectedTotalReserves);
     });
-
-    it('succeeds and saves updated values in storage but excludes evil spell', async () => {
-      const evilSpell = '0x560A8E3B79d23b0A525E15C6F3486c6A293DDAd2';
-
-      const startingTotalBorrows = 2e22;
-      const evilSpellBorrows = 1e22;
-      const startingTotalReserves = 1e20;
-      const reserveFactor = 1e17;
-
-      await send(cToken2, 'harnessSetAccountBorrows', [evilSpell, etherUnsigned(evilSpellBorrows), 0]);
-      await send(cToken2, 'harnessExchangeRateDetails', [0, etherUnsigned(startingTotalBorrows), etherUnsigned(startingTotalReserves)]);
-      await send(cToken2, 'harnessSetReserveFactorFresh', [etherUnsigned(reserveFactor)]);
-      await pretendBlock(cToken2);
-
-      const expectedAccrualBlockNumber = blockNumber + 1;
-      const expectedBorrowIndex = borrowIndex + borrowIndex * borrowRate;
-      const expectedTotalBorrows = startingTotalBorrows + (startingTotalBorrows - evilSpellBorrows) * borrowRate;
-      const expectedTotalReserves = startingTotalReserves + (startingTotalBorrows - evilSpellBorrows) *  borrowRate * reserveFactor / 1e18;
-
-      const receipt = await send(cToken2, 'accrueInterest')
-      expect(receipt).toSucceed();
-      expect(receipt).toHaveLog('AccrueInterest', {
-        cashPrior: 0,
-        interestAccumulated: etherUnsigned(expectedTotalBorrows).minus(etherUnsigned(startingTotalBorrows)).toFixed(),
-        borrowIndex: etherUnsigned(expectedBorrowIndex).toFixed(),
-        totalBorrows: etherUnsigned(expectedTotalBorrows).toFixed()
-      })
-      expect(await call(cToken2, 'accrualBlockNumber')).toEqualNumber(expectedAccrualBlockNumber);
-      expect(await call(cToken2, 'borrowIndex')).toEqualNumber(expectedBorrowIndex);
-      expect(await call(cToken2, 'totalBorrows')).toEqualNumber(expectedTotalBorrows);
-      expect(await call(cToken2, 'totalReserves')).toEqualNumber(expectedTotalReserves);
-    });
   });
 });

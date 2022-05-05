@@ -158,10 +158,10 @@ Macro LiquidateEthBorrow liquidator _ borrower amount token _ collateral
     From liquidator (Trx GasPrice 0 (Trx Value amount (CToken token Liquidate borrower collateral)))
 
 Macro Seize amount token caller liquidator borrower
-    From caller (CToken token Seize liquidator borrower amount)
+    From caller (CToken token Seize liquidator borrower amount 0)
 
 Macro EvilSeize token amount treasure seizer seizee
-    CToken token EvilSeize treasure seizer seizee amount
+    CToken token EvilSeize treasure seizer seizee amount 0
 
 Macro OldSupport cToken collateralFactor=0.5
     Comptroller OldSupportMarket cToken
