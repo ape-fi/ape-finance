@@ -430,7 +430,6 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
     }
 
     struct BorrowLocalVars {
-        MathError mathErr;
         uint256 accountBorrows;
         uint256 accountBorrowsNew;
         uint256 totalBorrowsNew;
@@ -482,7 +481,15 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
          *  On success, the cToken borrowAmount less of cash.
          *  doTransferOut reverts if anything goes wrong, since we can't be sure if side effects occurred.
          */
-        doTransferOut(borrower, borrowAmount, isNative);
+        if (borrowFee > 0) {
+            uint256 borrowAmountAfterFee = mul_(
+                borrowAmount,
+                sub_(Exp({mantissa: mantissaOne}), Exp({mantissa: borrowFee}))
+            );
+            doTransferOut(borrower, borrowAmountAfterFee, isNative);
+        } else {
+            doTransferOut(borrower, borrowAmount, isNative);
+        }
 
         /* We emit a Borrow event */
         emit Borrow(borrower, borrowAmount, vars.accountBorrowsNew, vars.totalBorrowsNew);
@@ -523,8 +530,6 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
     }
 
     struct RepayBorrowLocalVars {
-        Error err;
-        MathError mathErr;
         uint256 repayAmount;
         uint256 borrowerIndex;
         uint256 accountBorrows;
@@ -1017,6 +1022,20 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         emit NewMarketInterestRateModel(oldInterestRateModel, newInterestRateModel);
 
         return uint256(Error.NO_ERROR);
+    }
+
+    /**
+     * @notice updates the borrow fee
+     * @param newBorrowFee the new borrow fee
+     */
+    function _setBorrowFee(uint256 newBorrowFee) public {
+        require(msg.sender == admin, "admin only");
+        require(newBorrowFee < 0.1e18, "invalid borrow fee"); // 10% borrow fee max
+
+        uint256 oldBorrowFee = borrowFee;
+        borrowFee = newBorrowFee;
+
+        emit BorrowFee(oldBorrowFee, newBorrowFee);
     }
 
     /*** Safe Token ***/

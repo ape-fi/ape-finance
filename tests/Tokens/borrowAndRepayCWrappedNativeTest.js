@@ -185,6 +185,25 @@ describe('CWrappedNative', function () {
         [cToken, borrower, 'borrows', borrowAmount]
       ]));
     });
+
+    it("returns success from borrowFresh and transfers the correct amount with fee", async () => {
+      const borrowFee = etherMantissa(0.005);
+      await send(cToken, '_setBorrowFee', [borrowFee]);
+      // receiveAmount = borrowAmount * 0.995
+      const receiveAmount = borrowAmount.multipliedBy(etherMantissa(1).minus(borrowFee)).dividedBy(etherMantissa(1));
+
+      const beforeBalances = await getBalances([cToken], [borrower]);
+      await fastForward(cToken);
+      const result = await borrowNative(cToken, borrower, borrowAmount);
+      const afterBalances = await getBalances([cToken], [borrower]);
+      expect(result).toSucceed();
+      expect(afterBalances).toEqual(await adjustBalances(beforeBalances, [
+        [cToken, 'borrows', borrowAmount],
+        [cToken, 'cash', -receiveAmount],
+        [cToken, borrower, 'eth', receiveAmount.minus(await etherGasCost(result))],
+        [cToken, borrower, 'borrows', borrowAmount]
+      ]));
+    });
   });
 
   describe('borrow', () => {
@@ -206,6 +225,26 @@ describe('CWrappedNative', function () {
         [cToken, 'borrows', borrowAmount],
         [cToken, 'cash', -borrowAmount],
         [cToken, borrower, 'cash', borrowAmount],
+        [cToken, borrower, 'eth', -(await etherGasCost(result))],
+        [cToken, borrower, 'borrows', borrowAmount]
+      ]));
+    });
+
+    it("returns success from borrowFresh and transfers the correct amount with fee", async () => {
+      const borrowFee = etherMantissa(0.005);
+      await send(cToken, '_setBorrowFee', [borrowFee]);
+      // receiveAmount = borrowAmount * 0.995
+      const receiveAmount = borrowAmount.multipliedBy(etherMantissa(1).minus(borrowFee)).dividedBy(etherMantissa(1));
+
+      const beforeBalances = await getBalances([cToken], [borrower]);
+      await fastForward(cToken);
+      const result = await borrow(cToken, borrower, borrowAmount);
+      const afterBalances = await getBalances([cToken], [borrower]);
+      expect(result).toSucceed();
+      expect(afterBalances).toEqual(await adjustBalances(beforeBalances, [
+        [cToken, 'borrows', borrowAmount],
+        [cToken, 'cash', -receiveAmount],
+        [cToken, borrower, 'cash', receiveAmount],
         [cToken, borrower, 'eth', -(await etherGasCost(result))],
         [cToken, borrower, 'borrows', borrowAmount]
       ]));
