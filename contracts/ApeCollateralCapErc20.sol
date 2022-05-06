@@ -656,25 +656,45 @@ contract ApeCollateralCapErc20 is ApeToken, ApeCollateralCapErc20Interface {
         /* We take half of the liquidation incentive as fee */
         uint256 bonusTokens = sub_(seizeTokens, feeTokens);
 
+        /**
+         * For every user, accountTokens must be greater than or equal to accountCollateralTokens.
+         * The buffer between the two values will be seized first.
+         * bufferTokens = accountTokens[borrower] - accountCollateralTokens[borrower]
+         * collateralTokens = seizeTokens - bufferTokens
+         */
+        uint256 bufferTokens = sub_(accountTokens[borrower], accountCollateralTokens[borrower]);
+        uint256 collateralTokens = 0;
+        if (seizeTokens > bufferTokens) {
+            collateralTokens = seizeTokens - bufferTokens;
+        }
+
         /*
          * We calculate the new borrower and liquidator token balances and token collateral balances, failing on underflow/overflow:
          *  accountTokens[borrower] = accountTokens[borrower] - seizeTokens
          *  accountTokens[liquidator] = accountTokens[liquidator] + bonusTokens
          *  accountTokens[admin] = accountTokens[admin] + feeTokens
-         *  accountCollateralTokens[borrower] = accountCollateralTokens[borrower] - seizeTokens
-         *  accountCollateralTokens[liquidator] = accountCollateralTokens[liquidator] + bonusTokens
-         *  accountCollateralTokens[admin] = accountCollateralTokens[admin] + feeTokens
+         *  accountCollateralTokens[borrower] = accountCollateralTokens[borrower] - collateralTokens
+         *  accountCollateralTokens[liquidator] = accountCollateralTokens[liquidator] + min(collateralTokens, bonusTokens)
+         *  accountCollateralTokens[admin] = accountCollateralTokens[admin] + max(collateralTokens - bonusTokens, 0)
          */
         accountTokens[borrower] = sub_(accountTokens[borrower], seizeTokens);
         accountTokens[liquidator] = add_(accountTokens[liquidator], bonusTokens);
         accountTokens[admin] = add_(accountTokens[admin], feeTokens);
-        accountCollateralTokens[borrower] = sub_(accountCollateralTokens[borrower], seizeTokens);
-        accountCollateralTokens[liquidator] = add_(accountCollateralTokens[liquidator], bonusTokens);
-        accountCollateralTokens[admin] = add_(accountCollateralTokens[admin], feeTokens);
+        if (collateralTokens > 0) {
+            accountCollateralTokens[borrower] = sub_(accountCollateralTokens[borrower], collateralTokens);
+            if (collateralTokens <= bonusTokens) {
+                // All collateral tokens go to liquidator.
+                accountCollateralTokens[liquidator] = add_(accountCollateralTokens[liquidator], collateralTokens);
+            } else {
+                accountCollateralTokens[liquidator] = add_(accountCollateralTokens[liquidator], bonusTokens);
+                accountCollateralTokens[admin] = add_(accountCollateralTokens[admin], collateralTokens - bonusTokens);
+                emit UserCollateralChanged(admin, accountCollateralTokens[admin]);
+            }
 
-        /* Emit UserCollateralChanged events */
-        emit UserCollateralChanged(borrower, accountCollateralTokens[borrower]);
-        emit UserCollateralChanged(liquidator, accountCollateralTokens[liquidator]);
+            /* Emit UserCollateralChanged events */
+            emit UserCollateralChanged(borrower, accountCollateralTokens[borrower]);
+            emit UserCollateralChanged(liquidator, accountCollateralTokens[liquidator]);
+        }
 
         /* We call the defense hook */
         comptroller.seizeVerify(address(this), seizerToken, liquidator, borrower, seizeTokens);
