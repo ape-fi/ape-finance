@@ -344,4 +344,24 @@ describe('Comptroller', () => {
       await expect(call(comptroller, 'redeemVerify', [cToken._address, accounts[0], 5, 0])).rejects.toRevert("revert redeemTokens zero");
     });
   });
+
+  describe('_setBorrowFee', () => {
+    it("fails if not called by admin", async () => {
+      const cToken = await makeCToken();
+      await expect(send(cToken, '_setBorrowFee', [1], {from: accounts[0]})).rejects.toRevert("revert admin only");
+    });
+
+    it("fails if invalid borrow fee", async () => {
+      const cToken = await makeCToken();
+      await expect(send(cToken, '_setBorrowFee', [etherMantissa(0.11)])).rejects.toRevert("revert invalid borrow fee");
+    });
+
+    it("succeeds to set borrow fee", async () => {
+      const cToken = await makeCToken();
+      const borrowFee = etherMantissa(0.005);
+      const result = await send(cToken, '_setBorrowFee', [borrowFee]);
+      expect(result).toHaveLog('BorrowFee', {oldBorrowFee: 0, newBorrowFee: borrowFee});
+      expect(await call(cToken, 'borrowFee')).toEqual(borrowFee.toString());
+    });
+  });
 });

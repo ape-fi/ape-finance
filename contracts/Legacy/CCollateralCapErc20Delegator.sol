@@ -488,6 +488,15 @@ contract CCollateralCapErc20Delegator is CTokenInterface, CCollateralCapErc20Int
     }
 
     /**
+     * @notice updates the borrow fee
+     * @param newBorrowFee the new borrow fee
+     */
+    function _setBorrowFee(uint256 newBorrowFee) public {
+        newBorrowFee; // Shh
+        delegateAndReturn();
+    }
+
+    /**
      * @notice Set collateral cap of this market, 0 for no cap
      * @param newCollateralCap The new collateral cap
      */

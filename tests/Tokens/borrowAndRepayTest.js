@@ -175,6 +175,18 @@ describe('CToken', function () {
       expect(await borrow(cToken, borrower, borrowAmount)).toSucceed();
       expect(await balanceOf(cToken.underlying, borrower)).toEqualNumber(beforeAccountCash.plus(borrowAmount));
     });
+
+    it("returns success from borrowFresh and transfers the correct amount with fee", async () => {
+      const borrowFee = etherMantissa(0.005);
+      await send(cToken, '_setBorrowFee', [borrowFee]);
+      // receiveAmount = borrowAmount * 0.995
+      const receiveAmount = borrowAmount.multipliedBy(etherMantissa(1).minus(borrowFee)).dividedBy(etherMantissa(1));
+
+      const beforeAccountCash = await balanceOf(cToken.underlying, borrower);
+      await fastForward(cToken);
+      expect(await borrow(cToken, borrower, borrowAmount)).toSucceed();
+      expect(await balanceOf(cToken.underlying, borrower)).toEqualNumber(beforeAccountCash.plus(receiveAmount));
+    });
   });
 
   describe('repayBorrowFresh', () => {

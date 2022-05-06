@@ -1273,6 +1273,14 @@ contract CTokenDeprecated is CTokenInterface, Exponential, TokenErrorReporter {
     }
 
     /**
+     * @notice updates the borrow fee
+     * @param newBorrowFee the new borrow fee
+     */
+    function _setBorrowFee(uint256 newBorrowFee) public {
+        newBorrowFee; // Shh
+    }
+
+    /**
      * @notice updates the interest rate model (*requires fresh interest accrual)
      * @dev Admin function to update the interest rate model
      * @param newInterestRateModel the new interest rate model to use

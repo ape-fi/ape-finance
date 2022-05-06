@@ -257,6 +257,26 @@ describe('CTokenAdmin', () => {
     });
   });
 
+  describe('_setBorrowFee()', () => {
+    const borrowFee = etherMantissa(0.01);
+
+    beforeEach(async () => {
+      cToken = await makeCToken({admin: cTokenAdmin._address});
+    });
+
+    it('should only be callable by admin', async () => {
+      await expect(send(cTokenAdmin, '_setBorrowFee', [cToken._address, borrowFee], {from: others})).rejects.toRevert('revert only the admin may call this function');
+
+      expect(await call(cToken, 'borrowFee')).toEqualNumber(0);
+    });
+
+    it('should succeed and set new borrow fee', async () => {
+      expect(await send(cTokenAdmin, '_setBorrowFee', [cToken._address, borrowFee], {from: admin})).toSucceed();
+
+      expect(await call(cToken, 'borrowFee')).toEqualNumber(borrowFee);
+    });
+  });
+
   describe('_setCollateralCap()', () => {
     const cap = etherMantissa(100);
 
