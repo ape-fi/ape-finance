@@ -478,7 +478,7 @@ async function quickMint(cToken, minter, mintAmount, opts = {}) {
   if (dfn(opts.exchangeRate)) {
     expect(await send(cToken, 'harnessSetExchangeRate', [etherMantissa(opts.exchangeRate)])).toSucceed();
   }
-  return send(cToken, 'mint', [mintAmount], { from: minter });
+  return send(cToken, 'mint', [minter, mintAmount], { from: minter });
 }
 
 
@@ -501,7 +501,7 @@ async function quickRedeem(cToken, redeemer, redeemTokens, opts = {}) {
   if (dfn(opts.exchangeRate)) {
     expect(await send(cToken, 'harnessSetExchangeRate', [etherMantissa(opts.exchangeRate)])).toSucceed();
   }
-  return send(cToken, 'redeem', [redeemTokens], { from: redeemer });
+  return send(cToken, 'redeem', [redeemer, redeemTokens, 0], { from: redeemer });
 }
 
 async function quickRedeemUnderlying(cToken, redeemer, redeemAmount, opts = {}) {
@@ -510,7 +510,7 @@ async function quickRedeemUnderlying(cToken, redeemer, redeemAmount, opts = {}) 
   if (dfn(opts.exchangeRate)) {
     expect(await send(cToken, 'harnessSetExchangeRate', [etherMantissa(opts.exchangeRate)])).toSucceed();
   }
-  return send(cToken, 'redeemUnderlying', [redeemAmount], { from: redeemer });
+  return send(cToken, 'redeem', [redeemer, 0, redeemAmount], { from: redeemer });
 }
 
 async function setOraclePrice(cToken, price) {

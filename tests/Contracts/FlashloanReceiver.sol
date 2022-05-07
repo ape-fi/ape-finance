@@ -63,7 +63,7 @@ contract FlashloanAndMint is ERC3156FlashBorrowerInterface {
         require(initiator == address(this), "FlashBorrower: Untrusted loan initiator");
         ERC20(borrowToken).approve(msg.sender, amount.add(fee));
         address cToken = abi.decode(data, (address));
-        CCollateralCapErc20(cToken).mint(amount.add(fee));
+        CCollateralCapErc20(cToken).mint(address(this), amount.add(fee));
         return keccak256("ERC3156FlashBorrowerInterface.onFlashLoan");
     }
 }
@@ -89,7 +89,7 @@ contract FlashloanAndRepayBorrow is ERC3156FlashBorrowerInterface {
         require(initiator == address(this), "FlashBorrower: Untrusted loan initiator");
         ERC20(borrowToken).approve(msg.sender, amount.add(fee));
         address cToken = abi.decode(data, (address));
-        CCollateralCapErc20(cToken).repayBorrow(amount.add(fee));
+        CCollateralCapErc20(cToken).repayBorrow(address(this), amount.add(fee));
         return keccak256("ERC3156FlashBorrowerInterface.onFlashLoan");
     }
 }
@@ -176,7 +176,7 @@ contract FlashloanAndMintNative is ERC3156FlashBorrowerInterface {
     ) external returns (bytes32) {
         require(initiator == address(this), "FlashBorrower: Untrusted loan initiator");
         address payable cToken = abi.decode(data, (address));
-        CWrappedNative(cToken).mint(amount.add(fee));
+        CWrappedNative(cToken).mint(address(this), amount.add(fee));
         return keccak256("ERC3156FlashBorrowerInterface.onFlashLoan");
     }
 }
@@ -198,7 +198,7 @@ contract FlashloanAndRepayBorrowNative is ERC3156FlashBorrowerInterface {
     ) external returns (bytes32) {
         require(initiator == address(this), "FlashBorrower: Untrusted loan initiator");
         address payable cToken = abi.decode(data, (address));
-        CWrappedNative(cToken).repayBorrow(amount.add(fee));
+        CWrappedNative(cToken).repayBorrow(address(this), amount.add(fee));
         return keccak256("ERC3156FlashBorrowerInterface.onFlashLoan");
     }
 }

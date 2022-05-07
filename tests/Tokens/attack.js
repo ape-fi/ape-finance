@@ -34,7 +34,7 @@ describe('Attack', function () {
   it('reentry borrow attack', async () => {
     await send(cEvil.underlying, 'allocateTo', [accounts[0], etherMantissa(100)]);
     await send(cEvil.underlying, 'approve', [cEvil._address, etherMantissa(100)], {from: accounts[0]});
-    await send(cEvil, 'mint', [etherMantissa(100)], {from: accounts[0]});
+    await send(cEvil, 'mint', [accounts[0]._address, etherMantissa(100)], {from: accounts[0]});
 
     // Actually, this attack will emit a Failure event with value (3: COMPTROLLER_REJECTION, 6: BORROW_COMPTROLLER_REJECTION, 4: INSUFFICIENT_LIQUIDITY).
     // However, somehow it failed to parse the event.
@@ -66,14 +66,14 @@ describe('Attack', function () {
     // Supply 20 WETH.
     await send(cWeth.underlying, 'harnessSetBalance', [victim, etherMantissa(20)]);
     await send(cWeth.underlying, 'approve', [cWeth._address, etherMantissa(20)], {from: victim});
-    await send(cWeth, 'mint', [etherMantissa(20)], {from: victim});
+    await send(cWeth, 'mint', [victim._address, etherMantissa(20)], {from: victim});
     await send(comptroller, 'enterMarkets', [[cWeth._address]], {from: victim});
 
     // Borrow 5 WETH and 5 Evil.
-    await send(cWeth, 'borrow', [etherMantissa(5)], {from: victim});
+    await send(cWeth, 'borrow', [victim._address, etherMantissa(5)], {from: victim});
     await send(cEvil.underlying, 'allocateTo', [cEvil._address, etherMantissa(5)]);
     await send(cEvil, 'gulp');
-    await send(cEvil, 'borrow', [etherMantissa(5)], {from: victim});
+    await send(cEvil, 'borrow', [victim._address, etherMantissa(5)], {from: victim});
 
     // Check account liquidity: no more liquidity and no shortfall at this moment.
     ({1: liquidity, 2: shortfall} = await call(comptroller, 'getAccountLiquidity', [victim]));

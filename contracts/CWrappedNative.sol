@@ -53,12 +53,12 @@ contract CWrappedNative is CToken, CWrappedNativeInterface {
     /**
      * @notice Sender supplies assets into the market and receives cTokens in exchange
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
-     *  Keep return in the function signature for backward compatibility
+     * @param minter the minter
      * @param mintAmount The amount of the underlying asset to supply
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function mint(uint256 mintAmount) external returns (uint256) {
-        (uint256 err, ) = mintInternal(mintAmount, false);
+    function mint(address minter, uint256 mintAmount) external returns (uint256) {
+        (uint256 err, ) = mintInternal(minter, mintAmount, false);
         require(err == 0, "mint failed");
     }
 
@@ -66,121 +66,86 @@ contract CWrappedNative is CToken, CWrappedNativeInterface {
      * @notice Sender supplies assets into the market and receives cTokens in exchange
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      *  Keep return in the function signature for consistency
+     * @param minter the minter
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function mintNative() external payable returns (uint256) {
-        (uint256 err, ) = mintInternal(msg.value, true);
+    function mintNative(address minter) external payable returns (uint256) {
+        (uint256 err, ) = mintInternal(minter, msg.value, true);
         require(err == 0, "mint native failed");
     }
 
     /**
      * @notice Sender redeems cTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
-     *  Keep return in the function signature for backward compatibility
+     * @param redeemer The redeemer
      * @param redeemTokens The number of cTokens to redeem into underlying
+     * @param redeemAmount The amount of underlying to receive from redeeming cTokens
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function redeem(uint256 redeemTokens) external returns (uint256) {
-        require(redeemInternal(redeemTokens, false) == 0, "redeem failed");
+    function redeem(
+        address payable redeemer,
+        uint256 redeemTokens,
+        uint256 redeemAmount
+    ) external returns (uint256) {
+        require(redeemInternal(redeemer, redeemTokens, redeemAmount, false) == 0, "redeem failed");
     }
 
     /**
      * @notice Sender redeems cTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      *  Keep return in the function signature for consistency
+     * @param redeemer The redeemer
      * @param redeemTokens The number of cTokens to redeem into underlying
+     * @param redeemAmount The amount of underlying to receive from redeeming cTokens
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function redeemNative(uint256 redeemTokens) external returns (uint256) {
-        require(redeemInternal(redeemTokens, true) == 0, "redeem native failed");
-    }
-
-    /**
-     * @notice Sender redeems cTokens in exchange for a specified amount of underlying asset
-     * @dev Accrues interest whether or not the operation succeeds, unless reverted
-     *  Keep return in the function signature for backward compatibility
-     * @param redeemAmount The amount of underlying to redeem
-     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-     */
-    function redeemUnderlying(uint256 redeemAmount) external returns (uint256) {
-        require(redeemUnderlyingInternal(redeemAmount, false) == 0, "redeem underlying failed");
-    }
-
-    /**
-     * @notice Sender redeems cTokens in exchange for a specified amount of underlying asset
-     * @dev Accrues interest whether or not the operation succeeds, unless reverted
-     *  Keep return in the function signature for consistency
-     * @param redeemAmount The amount of underlying to redeem
-     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-     */
-    function redeemUnderlyingNative(uint256 redeemAmount) external returns (uint256) {
-        require(redeemUnderlyingInternal(redeemAmount, true) == 0, "redeem underlying native failed");
+    function redeemNative(
+        address payable redeemer,
+        uint256 redeemTokens,
+        uint256 redeemAmount
+    ) external returns (uint256) {
+        require(redeemInternal(redeemer, redeemTokens, redeemAmount, true) == 0, "redeem native failed");
     }
 
     /**
      * @notice Sender borrows assets from the protocol to their own address
-     * @dev Accrues interest whether or not the operation succeeds, unless reverted
-     *  Keep return in the function signature for backward compatibility
+     * @param borrower The borrower
      * @param borrowAmount The amount of the underlying asset to borrow
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function borrow(uint256 borrowAmount) external returns (uint256) {
-        require(borrowInternal(borrowAmount, false) == 0, "borrow failed");
+    function borrow(address payable borrower, uint256 borrowAmount) external returns (uint256) {
+        require(borrowInternal(borrower, borrowAmount, false) == 0, "borrow failed");
     }
 
     /**
      * @notice Sender borrows assets from the protocol to their own address
-     * @dev Accrues interest whether or not the operation succeeds, unless reverted
-     *  Keep return in the function signature for consistency
+     * @param borrower The borrower
      * @param borrowAmount The amount of the underlying asset to borrow
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function borrowNative(uint256 borrowAmount) external returns (uint256) {
-        require(borrowInternal(borrowAmount, true) == 0, "borrow native failed");
+    function borrowNative(address payable borrower, uint256 borrowAmount) external returns (uint256) {
+        require(borrowInternal(borrower, borrowAmount, true) == 0, "borrow native failed");
     }
 
     /**
-     * @notice Sender repays their own borrow
-     * @dev Accrues interest whether or not the operation succeeds, unless reverted
-     *  Keep return in the function signature for backward compatibility
+     * @notice Sender repays a borrow belonging to borrower
+     * @param borrower the account with the debt being payed off
      * @param repayAmount The amount to repay
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function repayBorrow(uint256 repayAmount) external returns (uint256) {
-        (uint256 err, ) = repayBorrowInternal(repayAmount, false);
+    function repayBorrow(address borrower, uint256 repayAmount) external returns (uint256) {
+        (uint256 err, ) = repayBorrowInternal(borrower, repayAmount, false);
         require(err == 0, "repay failed");
     }
 
     /**
      * @notice Sender repays their own borrow
-     * @dev Accrues interest whether or not the operation succeeds, unless reverted
-     *  Keep return in the function signature for consistency
+     * @param borrower the account with the debt being payed off
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function repayBorrowNative() external payable returns (uint256) {
-        (uint256 err, ) = repayBorrowInternal(msg.value, true);
+    function repayBorrowNative(address borrower) external payable returns (uint256) {
+        (uint256 err, ) = repayBorrowInternal(borrower, msg.value, true);
         require(err == 0, "repay native failed");
-    }
-
-    /**
-     * @notice Sender repays a borrow belonging to borrower
-     * @param borrower the account with the debt being payed off
-     * @param repayAmount The amount to repay
-     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-     */
-    function repayBorrowBehalf(address borrower, uint256 repayAmount) external returns (uint256) {
-        (uint256 err, ) = repayBorrowBehalfInternal(borrower, repayAmount, false);
-        require(err == 0, "repay behalf failed");
-    }
-
-    /**
-     * @notice Sender repays a borrow belonging to borrower
-     * @param borrower the account with the debt being payed off
-     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-     */
-    function repayBorrowBehalfNative(address borrower) external payable returns (uint256) {
-        (uint256 err, ) = repayBorrowBehalfInternal(borrower, msg.value, true);
-        require(err == 0, "repay behalf native failed");
     }
 
     /**

@@ -30,11 +30,11 @@ async function preMint(cToken, minter, mintAmount, mintTokens, exchangeRate) {
 }
 
 async function mintNative(cToken, minter, mintAmount) {
-  return send(cToken, 'mintNative', [], {from: minter, value: mintAmount});
+  return send(cToken, 'mintNative', [minter], {from: minter, value: mintAmount});
 }
 
 async function mint(cToken, minter, mintAmount) {
-  return send(cToken, 'mint', [mintAmount], { from: minter });
+  return send(cToken, 'mint', [minter, mintAmount], { from: minter });
 }
 
 async function preRedeem(cToken, redeemer, redeemTokens, redeemAmount, exchangeRate) {
@@ -50,19 +50,19 @@ async function preRedeem(cToken, redeemer, redeemTokens, redeemAmount, exchangeR
 }
 
 async function redeemCTokensNative(cToken, redeemer, redeemTokens, redeemAmount) {
-  return send(cToken, 'redeemNative', [redeemTokens], {from: redeemer});
+  return send(cToken, 'redeemNative', [redeemer, redeemTokens, 0], {from: redeemer});
 }
 
 async function redeemCTokens(cToken, redeemer, redeemTokens, redeemAmount) {
-  return send(cToken, 'redeem', [redeemTokens], {from: redeemer});
+  return send(cToken, 'redeem', [redeemer, redeemTokens, 0], {from: redeemer});
 }
 
 async function redeemUnderlyingNative(cToken, redeemer, redeemTokens, redeemAmount) {
-  return send(cToken, 'redeemUnderlyingNative', [redeemAmount], {from: redeemer});
+  return send(cToken, 'redeemNative', [redeemer, 0, redeemAmount], {from: redeemer});
 }
 
 async function redeemUnderlying(cToken, redeemer, redeemTokens, redeemAmount) {
-  return send(cToken, 'redeemUnderlying', [redeemAmount], {from: redeemer});
+  return send(cToken, 'redeem', [redeemer, 0, redeemAmount], {from: redeemer});
 }
 
 describe('CWrappedNative', () => {

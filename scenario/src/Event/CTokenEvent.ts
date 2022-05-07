@@ -65,7 +65,7 @@ async function mint(world: World, from: string, cToken: CToken, amount: NumberV 
 
   if (amount instanceof NumberV) {
     showAmount = amount.show();
-    invokation = await invoke(world, cToken.methods.mint(amount.encode()), from, CTokenErrorReporter);
+    invokation = await invoke(world, cToken.methods.mint(from, amount.encode()), from, CTokenErrorReporter);
   } else {
     showAmount = showTrxValue(world);
     invokation = await invoke(world, cToken.methods.mint(), from, CTokenErrorReporter);
@@ -82,7 +82,7 @@ async function mint(world: World, from: string, cToken: CToken, amount: NumberV 
 
 async function mintNative(world: World, from: string, cToken: CToken): Promise<World> {
   const showAmount = showTrxValue(world);
-  let invokation = await invoke(world, cToken.methods.mintNative(), from, CTokenErrorReporter);
+  let invokation = await invoke(world, cToken.methods.mintNative(from), from, CTokenErrorReporter);
 
   world = addAction(
     world,
@@ -94,7 +94,7 @@ async function mintNative(world: World, from: string, cToken: CToken): Promise<W
 }
 
 async function redeem(world: World, from: string, cToken: CToken, tokens: NumberV): Promise<World> {
-  let invokation = await invoke(world, cToken.methods.redeem(tokens.encode()), from, CTokenErrorReporter);
+  let invokation = await invoke(world, cToken.methods.redeem(from, tokens.encode(), 0), from, CTokenErrorReporter);
 
   world = addAction(
     world,
@@ -106,7 +106,7 @@ async function redeem(world: World, from: string, cToken: CToken, tokens: Number
 }
 
 async function redeemNative(world: World, from: string, cToken: CToken, tokens: NumberV): Promise<World> {
-  let invokation = await invoke(world, cToken.methods.redeemNative(tokens.encode()), from, CTokenErrorReporter);
+  let invokation = await invoke(world, cToken.methods.redeemNative(from, tokens.encode(), 0), from, CTokenErrorReporter);
 
   world = addAction(
     world,
@@ -118,7 +118,7 @@ async function redeemNative(world: World, from: string, cToken: CToken, tokens: 
 }
 
 async function redeemUnderlying(world: World, from: string, cToken: CToken, amount: NumberV): Promise<World> {
-  let invokation = await invoke(world, cToken.methods.redeemUnderlying(amount.encode()), from, CTokenErrorReporter);
+  let invokation = await invoke(world, cToken.methods.redeem(from, 0, amount.encode()), from, CTokenErrorReporter);
 
   world = addAction(
     world,
@@ -130,7 +130,7 @@ async function redeemUnderlying(world: World, from: string, cToken: CToken, amou
 }
 
 async function redeemUnderlyingNative(world: World, from: string, cToken: CToken, amount: NumberV): Promise<World> {
-  let invokation = await invoke(world, cToken.methods.redeemUnderlyingNative(amount.encode()), from, CTokenErrorReporter);
+  let invokation = await invoke(world, cToken.methods.redeemNative(from, 0, amount.encode()), from, CTokenErrorReporter);
 
   world = addAction(
     world,
@@ -142,7 +142,7 @@ async function redeemUnderlyingNative(world: World, from: string, cToken: CToken
 }
 
 async function borrow(world: World, from: string, cToken: CToken, amount: NumberV): Promise<World> {
-  let invokation = await invoke(world, cToken.methods.borrow(amount.encode()), from, CTokenErrorReporter);
+  let invokation = await invoke(world, cToken.methods.borrow(from, amount.encode()), from, CTokenErrorReporter);
 
   world = addAction(
     world,
@@ -154,7 +154,7 @@ async function borrow(world: World, from: string, cToken: CToken, amount: Number
 }
 
 async function borrowNative(world: World, from: string, cToken: CToken, amount: NumberV): Promise<World> {
-  let invokation = await invoke(world, cToken.methods.borrowNative(amount.encode()), from, CTokenErrorReporter);
+  let invokation = await invoke(world, cToken.methods.borrowNative(from, amount.encode()), from, CTokenErrorReporter);
 
   world = addAction(
     world,
@@ -171,7 +171,7 @@ async function repayBorrow(world: World, from: string, cToken: CToken, amount: N
 
   if (amount instanceof NumberV) {
     showAmount = amount.show();
-    invokation = await invoke(world, cToken.methods.repayBorrow(amount.encode()), from, CTokenErrorReporter);
+    invokation = await invoke(world, cToken.methods.repayBorrow(from, amount.encode()), from, CTokenErrorReporter);
   } else {
     showAmount = showTrxValue(world);
     invokation = await invoke(world, cToken.methods.repayBorrow(), from, CTokenErrorReporter);
@@ -188,7 +188,7 @@ async function repayBorrow(world: World, from: string, cToken: CToken, amount: N
 
 async function repayBorrowNative(world: World, from: string, cToken: CToken): Promise<World> {
   const showAmount = showTrxValue(world);
-  let invokation = await invoke(world, cToken.methods.repayBorrowNative(), from, CTokenErrorReporter);
+  let invokation = await invoke(world, cToken.methods.repayBorrowNative(from), from, CTokenErrorReporter);
 
   world = addAction(
     world,
@@ -205,10 +205,7 @@ async function repayBorrowBehalf(world: World, from: string, behalf: string, cTo
 
   if (amount instanceof NumberV) {
     showAmount = amount.show();
-    invokation = await invoke(world, cToken.methods.repayBorrowBehalf(behalf, amount.encode()), from, CTokenErrorReporter);
-  } else {
-    showAmount = showTrxValue(world);
-    invokation = await invoke(world, cToken.methods.repayBorrowBehalf(behalf), from, CTokenErrorReporter);
+    invokation = await invoke(world, cToken.methods.repayBorrow(behalf, amount.encode()), from, CTokenErrorReporter);
   }
 
   world = addAction(
@@ -222,7 +219,7 @@ async function repayBorrowBehalf(world: World, from: string, behalf: string, cTo
 
 async function repayBorrowBehalfNative(world: World, from: string, behalf: string, cToken: CToken): Promise<World> {
   const showAmount = showTrxValue(world);
-  let invokation = await invoke(world, cToken.methods.repayBorrowBehalfNative(behalf), from, CTokenErrorReporter);
+  let invokation = await invoke(world, cToken.methods.repayBorrowNative(behalf), from, CTokenErrorReporter);
 
   world = addAction(
     world,

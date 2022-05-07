@@ -88,12 +88,12 @@ contract EvilAccount is RecipientInterface {
         comptroller.enterMarkets(markets);
 
         // Borrow EvilTransferToken.
-        require(CErc20(crEvilToken).borrow(borrowAmount) == 0, "first borrow failed");
+        require(CErc20(crEvilToken).borrow(address(this), borrowAmount) == 0, "first borrow failed");
     }
 
     function tokensReceived() external {
         // Borrow Eth.
-        require(CEther(crEth).borrow(borrowAmount) != 0, "reentry borrow succeed");
+        require(CEther(crEth).borrow(address(this), borrowAmount) != 0, "reentry borrow succeed");
     }
 
     function() external payable {}
