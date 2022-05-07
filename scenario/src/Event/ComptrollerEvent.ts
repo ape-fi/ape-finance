@@ -74,7 +74,7 @@ async function setLiquidationIncentive(world: World, from: string, comptroller: 
   return world;
 }
 
-async function oldSupportMarket(world: World, from: string, comptroller: Comptroller, cToken: CToken): Promise<World> {
+async function supportMarket(world: World, from: string, comptroller: Comptroller, cToken: CToken): Promise<World> {
   if (world.dryRun) {
     // Skip this specifically on dry runs since it's likely to crash due to a number of reasons
     world.printer.printLine(`Dry run: Supporting market  \`${cToken._address}\``);
@@ -82,24 +82,6 @@ async function oldSupportMarket(world: World, from: string, comptroller: Comptro
   }
 
   let invokation = await invoke(world, comptroller.methods._supportMarket(cToken._address), from, ComptrollerErrorReporter);
-
-  world = addAction(
-    world,
-    `Supported market ${cToken.name}`,
-    invokation
-  );
-
-  return world;
-}
-
-async function supportMarket(world: World, from: string, comptroller: Comptroller, cToken: CToken, version: NumberV): Promise<World> {
-  if (world.dryRun) {
-    // Skip this specifically on dry runs since it's likely to crash due to a number of reasons
-    world.printer.printLine(`Dry run: Supporting market  \`${cToken._address}\``);
-    return world;
-  }
-
-  let invokation = await invoke(world, comptroller.methods._supportMarket(cToken._address, version.encode()), from, ComptrollerErrorReporter);
 
   world = addAction(
     world,
@@ -377,31 +359,17 @@ export function comptrollerCommands() {
       (world, from, {comptroller, action, isPaused}) => setPaused(world, from, comptroller, action.val, isPaused.val)
     ),
     new Command<{comptroller: Comptroller, cToken: CToken}>(`
-        #### OldSupportMarket
-
-        * "Comptroller OldSupportMarket <CToken>" - Adds support in the Comptroller for the given cToken
-          * E.g. "Comptroller OldSupportMarket cZRX"
-      `,
-      "OldSupportMarket",
-      [
-        new Arg("comptroller", getComptroller, {implicit: true}),
-        new Arg("cToken", getCTokenV)
-      ],
-      (world, from, {comptroller, cToken}) => oldSupportMarket(world, from, comptroller, cToken)
-    ),
-    new Command<{comptroller: Comptroller, cToken: CToken, version: NumberV}>(`
         #### SupportMarket
 
-        * "Comptroller SupportMarket <CToken> <Number>" - Adds support in the Comptroller for the given cToken
-          * E.g. "Comptroller SupportMarket cZRX 0"
+        * "Comptroller SupportMarket <CToken>" - Adds support in the Comptroller for the given cToken
+          * E.g. "Comptroller SupportMarket cZRX"
       `,
       "SupportMarket",
       [
         new Arg("comptroller", getComptroller, {implicit: true}),
-        new Arg("cToken", getCTokenV),
-        new Arg("version", getNumberV)
+        new Arg("cToken", getCTokenV)
       ],
-      (world, from, {comptroller, cToken, version}) => supportMarket(world, from, comptroller, cToken, version)
+      (world, from, {comptroller, cToken}) => supportMarket(world, from, comptroller, cToken)
     ),
     new Command<{comptroller: Comptroller, cToken: CToken}>(`
         #### UnList

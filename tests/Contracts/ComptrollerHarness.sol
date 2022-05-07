@@ -330,11 +330,6 @@ contract BoolComptroller is ComptrollerInterface {
         return (calculatedSeizeTokens, 0);
     }
 
-    function updateCTokenVersion(address _cToken, ComptrollerV1Storage.Version _version) external {
-        _cToken;
-        _version;
-    }
-
     /**** Mock Settors ****/
 
     /*** Policy Hooks ***/

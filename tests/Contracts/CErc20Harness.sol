@@ -611,10 +611,6 @@ contract CCollateralCapErc20DelegateHarness is CCollateralCapErc20Delegate {
         accountCollateralTokens[account] = amount;
     }
 
-    function harnessSetCollateralBalanceInit(address account) external {
-        isCollateralTokenInit[account] = true;
-    }
-
     function harnessSetAccrualBlockNumber(uint256 _accrualblockNumber) public {
         accrualBlockNumber = _accrualblockNumber;
     }

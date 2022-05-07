@@ -49,7 +49,7 @@ describe('CompoundLens', () => {
   describe('cTokenMetadata', () => {
     it('is correct for a cErc20', async () => {
       let cErc20 = await makeCToken();
-      await send(cErc20.comptroller, '_supportMarket', [cErc20._address, 0]);
+      await send(cErc20.comptroller, '_supportMarket', [cErc20._address]);
       await send(cErc20.comptroller, '_setMarketSupplyCaps', [[cErc20._address], [100]]);
       await send(cErc20.comptroller, '_setMarketBorrowCaps', [[cErc20._address], [200]]);
       await send(cErc20.comptroller, '_setMintPaused', [cErc20._address, true]);
@@ -419,7 +419,6 @@ describe('CompoundLens', () => {
       let cCollateralCapErc20 = await makeCToken({kind: 'ccollateralcap', comptrollerOpts: {kind: 'bool'}});
       await send(cCollateralCapErc20, 'harnessSetBalance', [acct, mintTokens]);
       await send(cCollateralCapErc20, 'harnessSetCollateralBalance', [acct, mintTokens]);
-      await send(cCollateralCapErc20, 'harnessSetCollateralBalanceInit', [acct]);
       let ethBalance = await web3.eth.getBalance(acct);
       expect(
         cullTuple(await call(compoundLens, 'cTokenBalances', [cCollateralCapErc20._address, acct], {gasPrice: '0'}))

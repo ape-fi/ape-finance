@@ -87,7 +87,7 @@ describe('assetListTest', () => {
 
     it("the market must be listed for add to succeed", async () => {
       await failToEnterMarkets([SKT], [], ['revert market not listed']);
-      await send(comptroller, '_supportMarket', [SKT._address, 0]);
+      await send(comptroller, '_supportMarket', [SKT._address]);
       await enterAndCheckMarkets([SKT], [SKT]);
     });
 

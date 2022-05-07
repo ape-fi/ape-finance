@@ -87,7 +87,6 @@ async function makeCToken(opts = {}) {
 
   let cToken, underlying;
   let cDelegator, cDelegatee;
-  let version = 0;
 
   switch (kind) {
     case 'cether':
@@ -121,7 +120,6 @@ async function makeCToken(opts = {}) {
         ]
       );
       cToken = await saddle.getContractAt('CCollateralCapErc20DelegateHarness', cDelegator._address);
-      version = 1; // ccollateralcap's version is 1
       break;
 
     case 'cwrapped':
@@ -142,7 +140,6 @@ async function makeCToken(opts = {}) {
         ]
       );
       cToken = await saddle.getContractAt('CWrappedNativeDelegateHarness', cDelegator._address); // XXXS at
-      version = 2; // cwrappednative's version is 2
       break;
 
     case 'cevil':
@@ -163,7 +160,6 @@ async function makeCToken(opts = {}) {
         ]
       );
       cToken = await saddle.getContractAt('CCollaterlaCapErc20CheckRepayDelegateHarness', cDelegator._address); // XXXS at
-      version = 1; // ccollateralcap's version is 1
       break;
 
     case 'cerc20':
@@ -189,7 +185,7 @@ async function makeCToken(opts = {}) {
   }
 
   if (opts.supportMarket) {
-    await send(comptroller, '_supportMarket', [cToken._address, version]);
+    await send(comptroller, '_supportMarket', [cToken._address]);
   }
 
   if (opts.underlyingPrice) {
@@ -277,16 +273,6 @@ async function makeToken(opts = {}) {
     const symbol = opts.symbol || 'OMG';
     const name = opts.name || `Erc20 ${symbol}`;
     return await deploy('ERC20Harness', [quantity, name, decimals, symbol]);
-  } else if (kind == 'ctoken') {
-    const quantity = etherUnsigned(dfn(opts.quantity, 1e25));
-    const decimals = etherUnsigned(dfn(opts.decimals, 18));
-    const symbol = opts.symbol || 'cOMG';
-    const name = opts.name || `Compound ${symbol}`;
-
-    const comptroller = await makeComptroller({kind: "compound"});
-    const cToken = await deploy('CTokenHarness', [quantity, name, decimals, symbol, comptroller._address]);
-    await send(comptroller, '_supportMarket', [cToken._address, 0]);
-    return cToken;
   } else if (kind == 'curveToken') {
     const quantity = etherUnsigned(dfn(opts.quantity, 1e25));
     const decimals = etherUnsigned(dfn(opts.decimals, 18));
