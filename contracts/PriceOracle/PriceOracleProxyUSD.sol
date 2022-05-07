@@ -5,18 +5,20 @@ import "./Denominations.sol";
 import "./PriceOracle.sol";
 import "./interfaces/BandReference.sol";
 import "./interfaces/FeedRegistryInterface.sol";
-import "./interfaces/V1PriceOracleInterface.sol";
 import "../CErc20.sol";
 import "../CToken.sol";
 import "../Exponential.sol";
 import "../EIP20Interface.sol";
 
-contract PriceOracleProxyIB is PriceOracle, Exponential, Denominations {
+contract PriceOracleProxyUSD is PriceOracle, Exponential, Denominations {
     /// @notice Admin address
     address public admin;
 
     /// @notice Guardian address
     address public guardian;
+
+    /// @notice apeUSD address
+    address public apeUSD;
 
     struct AggregatorInfo {
         /// @notice The base
@@ -40,9 +42,6 @@ contract PriceOracleProxyIB is PriceOracle, Exponential, Denominations {
     /// @notice Band Reference
     mapping(address => ReferenceInfo) public references;
 
-    /// @notice The v1 price oracle, maintain by CREAM
-    V1PriceOracleInterface public v1PriceOracle;
-
     /// @notice The ChainLink registry address
     FeedRegistryInterface public reg;
 
@@ -54,20 +53,20 @@ contract PriceOracleProxyIB is PriceOracle, Exponential, Denominations {
 
     /**
      * @param admin_ The address of admin to set aggregators
-     * @param v1PriceOracle_ The v1 price oracle
      * @param registry_ The address of ChainLink registry
      * @param reference_ The address of Band reference
+     * @param apeUSD_ The address of apeUSD
      */
     constructor(
         address admin_,
-        address v1PriceOracle_,
         address registry_,
-        address reference_
+        address reference_,
+        address apeUSD_
     ) public {
         admin = admin_;
-        v1PriceOracle = V1PriceOracleInterface(v1PriceOracle_);
         reg = FeedRegistryInterface(registry_);
         ref = StdReferenceInterface(reference_);
+        apeUSD = apeUSD_;
     }
 
     /**
@@ -77,6 +76,11 @@ contract PriceOracleProxyIB is PriceOracle, Exponential, Denominations {
      */
     function getUnderlyingPrice(CToken cToken) public view returns (uint256) {
         address underlying = CErc20(address(cToken)).underlying();
+
+        if (underlying == apeUSD) {
+            // apeUSD always worth 1
+            return 1e18;
+        }
 
         // Get price from ChainLink.
         AggregatorInfo storage aggregatorInfo = aggregators[underlying];
@@ -97,8 +101,7 @@ contract PriceOracleProxyIB is PriceOracle, Exponential, Denominations {
             return getNormalizedPrice(price, underlying);
         }
 
-        // Get price from v1.
-        return getPriceFromV1(underlying);
+        return 0;
     }
 
     /*** Internal fucntions ***/
@@ -139,15 +142,6 @@ contract PriceOracleProxyIB is PriceOracle, Exponential, Denominations {
     function getNormalizedPrice(uint256 price, address tokenAddress) internal view returns (uint256) {
         uint256 underlyingDecimals = EIP20Interface(tokenAddress).decimals();
         return mul_(price, 10**(18 - underlyingDecimals));
-    }
-
-    /**
-     * @notice Get price from v1 price oracle
-     * @param token The token to get the price of
-     * @return The price
-     */
-    function getPriceFromV1(address token) internal view returns (uint256) {
-        return v1PriceOracle.assetPrices(token);
     }
 
     /*** Admin or guardian functions ***/

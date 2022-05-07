@@ -1,13 +1,13 @@
 pragma solidity ^0.5.16;
 
-import "./Denominations.sol";
-import "./PriceOracle.sol";
-import "./interfaces/CurveTokenInterface.sol";
-import "./interfaces/FeedRegistryInterface.sol";
-import "./interfaces/UniswapV2Interface.sol";
-import "./interfaces/V1PriceOracleInterface.sol";
-import "./interfaces/XSushiExchangeRateInterface.sol";
-import "./interfaces/YVaultTokenInterface.sol";
+import "../PriceOracle/Denominations.sol";
+import "../PriceOracle/PriceOracle.sol";
+import "../PriceOracle/interfaces/CurveTokenInterface.sol";
+import "../PriceOracle/interfaces/FeedRegistryInterface.sol";
+import "../PriceOracle/interfaces/UniswapV2Interface.sol";
+import "../PriceOracle/interfaces/V1PriceOracleInterface.sol";
+import "../PriceOracle/interfaces/XSushiExchangeRateInterface.sol";
+import "../PriceOracle/interfaces/YVaultTokenInterface.sol";
 import "../CErc20.sol";
 import "../CToken.sol";
 import "../Exponential.sol";
