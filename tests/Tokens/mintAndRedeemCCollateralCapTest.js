@@ -279,7 +279,6 @@ describe('CToken', function () {
         await send(cToken, 'harnessSetCollateralBalance', [redeemer, redeemTokens]);
         await send(cToken, 'harnessSetTotalSupply', [redeemTokens.multipliedBy(3)]);
         await send(cToken, 'harnessSetTotalCollateralTokens', [redeemTokens]);
-        await send(cToken, 'harnessSetCollateralBalanceInit', [redeemer]);
 
         expect(await redeemFresh(cToken, redeemer, redeemTokens, redeemAmount)).toSucceed();
 
@@ -300,7 +299,6 @@ describe('CToken', function () {
         await send(cToken, 'harnessSetCollateralBalance', [redeemer, redeemTokens]);
         await send(cToken, 'harnessSetTotalSupply', [redeemTokens.plus(1)]);
         await send(cToken, 'harnessSetTotalCollateralTokens', [redeemTokens]);
-        await send(cToken, 'harnessSetCollateralBalanceInit', [redeemer]);
 
         expect(await redeemFresh(cToken, redeemer, redeemTokens, redeemAmount)).toSucceed();
 

@@ -309,7 +309,7 @@ describe('CTokenAdmin', () => {
     let cCollateralCapDelegate;
 
     beforeEach(async () => {
-      cToken = await makeCToken({admin: cTokenAdmin._address});
+      cToken = await makeCToken({admin: cTokenAdmin._address, kind: 'ccollateralcap'});
       oldImplementation = await call(cToken, 'implementation');
       cCollateralCapDelegate = await deploy('CCollateralCapErc20Delegate');
     });
@@ -336,7 +336,7 @@ describe('CTokenAdmin', () => {
     let cCollateralCapDelegate;
 
     beforeEach(async () => {
-      cToken = await makeCToken({admin: cTokenAdmin._address});
+      cToken = await makeCToken({admin: cTokenAdmin._address, kind: 'ccollateralcap'});
       oldImplementation = await call(cToken, 'implementation');
       cCollateralCapDelegate = await deploy('CCollateralCapErc20Delegate');
     });
@@ -361,7 +361,7 @@ describe('CTokenAdmin', () => {
     let cCollateralCapDelegate;
 
     beforeEach(async () => {
-      cToken = await makeCToken({admin: cTokenAdmin._address});
+      cToken = await makeCToken({admin: cTokenAdmin._address, kind: 'ccollateralcap'});
       oldImplementation = await call(cToken, 'implementation');
       cCollateralCapDelegate = await deploy('CCollateralCapErc20Delegate');
     });

@@ -47,23 +47,23 @@ Macro NewEtherToken cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=
     InterestRateModel Deploy Fixed StdInterest borrowRate -- Note: interest rate model probably shouldn't be global
     CToken Deploy CEtherScenario cToken cToken (Comptroller Address) (InterestRateModel StdInterest Address) initialExchangeRate decimals admin
 
-Macro ListedCToken erc20 cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 tokenType=Standard delegatorType=CCollateralCapErc20DelegatorScenario cTokenType=CCollateralCapErc20DelegateScenario admin=Admin version=1
+Macro ListedCToken erc20 cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 tokenType=Standard delegatorType=CCollateralCapErc20DelegatorScenario cTokenType=CCollateralCapErc20DelegateScenario admin=Admin
     NewCToken erc20 cToken borrowRate initialExchangeRate decimals tokenType delegatorType cTokenType admin
-    Comptroller SupportMarket cToken version
+    Comptroller SupportMarket cToken
 
-Macro ListedCTokenImmutable erc20 cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 tokenType=Standard cTokenType=Scenario admin=Admin version=0
+Macro ListedCTokenImmutable erc20 cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 tokenType=Standard cTokenType=Scenario admin=Admin
     NewCTokenImmutable erc20 cToken borrowRate initialExchangeRate decimals tokenType cTokenType admin
-    Comptroller SupportMarket cToken version
+    Comptroller SupportMarket cToken
 
-Macro ListedEtherToken cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 admin=Admin version=0
+Macro ListedEtherToken cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 admin=Admin
     NewEtherToken cToken borrowRate initialExchangeRate decimals admin
-    Comptroller SupportMarket cToken version
+    Comptroller SupportMarket cToken
     PriceOracleProxy Deploy Admin (PriceOracle Address) (Address cETH) (Address Zero)
     Comptroller SetPriceOracle (PriceOracleProxy Address)
 
-Macro ListedEtherTokenMinted cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 admin=Admin version=0
+Macro ListedEtherTokenMinted cToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 admin=Admin
     NewEtherToken cToken borrowRate initialExchangeRate decimals admin
-    Comptroller SupportMarket cToken version
+    Comptroller SupportMarket cToken
     CallMintEth Root 1e18 cToken
 
 Macro SetPriceCF cToken price collateralFactor
@@ -163,12 +163,8 @@ Macro Seize amount token caller liquidator borrower
 Macro EvilSeize token amount treasure seizer seizee
     CToken token EvilSeize treasure seizer seizee amount 0
 
-Macro OldSupport cToken collateralFactor=0.5
-    Comptroller OldSupportMarket cToken
-    Comptroller SetCollateralFactor cToken collateralFactor
-
-Macro Support cToken collateralFactor=0.5 version=1
-    Comptroller SupportMarket cToken version
+Macro Support cToken collateralFactor=0.5
+    Comptroller SupportMarket cToken
     Comptroller SetCollateralFactor cToken collateralFactor
 
 Macro SetCollateralFactor cToken collateralFactor=0.5
