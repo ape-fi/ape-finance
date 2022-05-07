@@ -1,6 +1,6 @@
 Macro CollateralCap
     NewComptroller
-    ListedCToken ZRX cZRX initialExchangeRate:1e9 decimals:8 tokenType:Standard delegatorType:CCollateralCapErc20DelegatorScenario cTokenType:CCollateralCapErc20DelegateScenario version:1
+    ListedCToken ZRX cZRX initialExchangeRate:1e9 decimals:8 tokenType:Standard delegatorType:CCollateralCapErc20DelegatorScenario cTokenType:CCollateralCapErc20DelegateScenario
     SetCollateralFactor cZRX collateralFactor:0.5
 
 Macro CollateralCapWithUpgrade
@@ -235,9 +235,9 @@ Test "Seize collateral tokens"
 Test "Checks account liquidity with multiple tokens"
     CollateralCap
     CToken cZRX SetCollateralCap 20e9
-    ListedCToken BAT cBAT initialExchangeRate:1e9 decimals:8 tokenType:Standard delegatorType:CCollateralCapErc20DelegatorScenario cTokenType:CCollateralCapErc20DelegateScenario version:1
+    ListedCToken BAT cBAT initialExchangeRate:1e9 decimals:8 tokenType:Standard delegatorType:CCollateralCapErc20DelegatorScenario cTokenType:CCollateralCapErc20DelegateScenario
     SetCollateralFactor cBAT collateralFactor:0.5
-    ListedCToken OMG cOMG initialExchangeRate:1e9 decimals:8 tokenType:Standard delegatorType:CCollateralCapErc20DelegatorScenario cTokenType:CCollateralCapErc20DelegateScenario version:1
+    ListedCToken OMG cOMG initialExchangeRate:1e9 decimals:8 tokenType:Standard delegatorType:CCollateralCapErc20DelegatorScenario cTokenType:CCollateralCapErc20DelegateScenario
     SetCollateralFactor cOMG collateralFactor:0.5
     ListedCToken REP cREP initialExchangeRate:1e9
     SetCollateralFactor cREP collateralFactor:0.5
