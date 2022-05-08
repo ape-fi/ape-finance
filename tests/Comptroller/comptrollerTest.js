@@ -361,4 +361,18 @@ describe('Comptroller', () => {
       expect(await call(cToken, 'borrowFee')).toEqual(borrowFee.toString());
     });
   });
+
+  describe('_setHelper', () => {
+    it("fails if not called by admin", async () => {
+      const cToken = await makeCToken();
+      await expect(send(cToken, '_setHelper', [root], {from: accounts[0]})).rejects.toRevert("revert admin only");
+    });
+
+    it("succeeds to set helper", async () => {
+      const cToken = await makeCToken();
+      const result = await send(cToken, '_setHelper', [root]);
+      expect(result).toHaveLog('HelperSet', {oldHelper: address(0), newHelper: root});
+      expect(await call(cToken, 'helper')).toEqual(root);
+    });
+  });
 });

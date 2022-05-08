@@ -354,12 +354,9 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         uint256 mintAmount,
         bool isNative
     ) internal nonReentrant returns (uint256, uint256) {
-        // Only helper contract or minter itself could mint.
-        require(msg.sender == helper || msg.sender == minter, "invalid minter");
-
         accrueInterest();
         // mintFresh emits the actual Mint event if successful and logs on errors, so we don't need to
-        return mintFresh(minter, mintAmount, isNative);
+        return mintFresh(msg.sender, minter, mintAmount, isNative);
     }
 
     /**
@@ -377,7 +374,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         uint256 redeemAmount,
         bool isNative
     ) internal nonReentrant returns (uint256) {
-        // Only helper contract or redeemer itself could mint.
+        // Only helper contract or redeemer itself could redeem.
         require(msg.sender == helper || msg.sender == redeemer, "invalid redeemer");
 
         accrueInterest();
@@ -397,7 +394,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
         uint256 borrowAmount,
         bool isNative
     ) internal nonReentrant returns (uint256) {
-        // Only helper contract or borrower itself could mint.
+        // Only helper contract or borrower itself could borrow.
         require(msg.sender == helper || msg.sender == borrower, "invalid borrower");
 
         accrueInterest();
@@ -1066,6 +1063,7 @@ contract CToken is CTokenInterface, Exponential, TokenErrorReporter {
      * @dev Assumes interest has already been accrued up to the current block
      */
     function mintFresh(
+        address payer,
         address minter,
         uint256 mintAmount,
         bool isNative

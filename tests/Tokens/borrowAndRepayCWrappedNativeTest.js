@@ -39,12 +39,20 @@ async function borrowFresh(cToken, borrower, borrowAmount) {
 
 async function borrowNative(cToken, borrower, borrowAmount, opts = {}) {
   await send(cToken, 'harnessFastForward', [1]);
-  return send(cToken, 'borrowNative', [borrower, borrowAmount], {from: borrower});
+  let from = borrower;
+  if (opts.from) {
+    from = opts.from;
+  }
+  return send(cToken, 'borrowNative', [borrower, borrowAmount], {from: from});
 }
 
 async function borrow(cToken, borrower, borrowAmount, opts = {}) {
   await send(cToken, 'harnessFastForward', [1]);
-  return send(cToken, 'borrow', [borrower, borrowAmount], {from: borrower});
+  let from = borrower;
+  if (opts.from) {
+    from = opts.from;
+  }
+  return send(cToken, 'borrow', [borrower, borrowAmount], {from: from});
 }
 
 async function preRepay(cToken, benefactor, borrower, repayAmount) {
@@ -204,6 +212,25 @@ describe('CWrappedNative', function () {
         [cToken, borrower, 'borrows', borrowAmount]
       ]));
     });
+
+    it("fails if borrow trigger by other", async () => {
+      await expect(borrowNative(cToken, borrower, borrowAmount, {from: root})).rejects.toRevert('revert invalid borrower');
+    });
+
+    it("borrows successfully by helper", async () => {
+      await send(cToken, '_setHelper', [root]);
+      const beforeBalances = await getBalances([cToken], [borrower]);
+      await fastForward(cToken);
+      const result = await borrowNative(cToken, borrower, borrowAmount, {from: root});
+      const afterBalances = await getBalances([cToken], [borrower]);
+      expect(result).toSucceed();
+      expect(afterBalances).toEqual(await adjustBalances(beforeBalances, [
+        [cToken, 'borrows', borrowAmount],
+        [cToken, 'cash', -borrowAmount],
+        [cToken, borrower, 'eth', borrowAmount],
+        [cToken, borrower, 'borrows', borrowAmount]
+      ]));
+    });
   });
 
   describe('borrow', () => {
@@ -246,6 +273,25 @@ describe('CWrappedNative', function () {
         [cToken, 'cash', -receiveAmount],
         [cToken, borrower, 'cash', receiveAmount],
         [cToken, borrower, 'eth', -(await etherGasCost(result))],
+        [cToken, borrower, 'borrows', borrowAmount]
+      ]));
+    });
+
+    it("fails if borrow trigger by other", async () => {
+      await expect(borrow(cToken, borrower, borrowAmount, {from: root})).rejects.toRevert('revert invalid borrower');
+    });
+
+    it("borrows successfully by helper", async () => {
+      await send(cToken, '_setHelper', [root]);
+      const beforeBalances = await getBalances([cToken], [borrower]);
+      await fastForward(cToken);
+      const result = await borrow(cToken, borrower, borrowAmount, {from: root});
+      const afterBalances = await getBalances([cToken], [borrower]);
+      expect(result).toSucceed();
+      expect(afterBalances).toEqual(await adjustBalances(beforeBalances, [
+        [cToken, 'borrows', borrowAmount],
+        [cToken, 'cash', -borrowAmount],
+        [cToken, borrower, 'cash', borrowAmount],
         [cToken, borrower, 'borrows', borrowAmount]
       ]));
     });

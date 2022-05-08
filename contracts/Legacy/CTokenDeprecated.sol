@@ -435,7 +435,7 @@ contract CTokenDeprecated is CTokenInterface, Exponential, TokenErrorReporter {
      */
     function mintFresh(address minter, uint256 mintAmount) internal returns (uint256, uint256) {
         /* Fail if mint not allowed */
-        uint256 allowed = comptroller.mintAllowed(address(this), minter, mintAmount);
+        uint256 allowed = comptroller.mintAllowed(address(this), minter, minter, mintAmount);
         if (allowed != 0) {
             return (failOpaque(Error.COMPTROLLER_REJECTION, FailureInfo.MINT_COMPTROLLER_REJECTION, allowed), 0);
         }
@@ -483,11 +483,11 @@ contract CTokenDeprecated is CTokenInterface, Exponential, TokenErrorReporter {
         accountTokens[minter] = vars.accountTokensNew;
 
         /* We emit a Mint event, and a Transfer event */
-        emit Mint(minter, vars.actualMintAmount, vars.mintTokens);
+        emit Mint(minter, minter, vars.actualMintAmount, vars.mintTokens);
         emit Transfer(address(this), minter, vars.mintTokens);
 
         /* We call the defense hook */
-        comptroller.mintVerify(address(this), minter, vars.actualMintAmount, vars.mintTokens);
+        comptroller.mintVerify(address(this), minter, minter, vars.actualMintAmount, vars.mintTokens);
 
         return (uint256(Error.NO_ERROR), vars.actualMintAmount);
     }

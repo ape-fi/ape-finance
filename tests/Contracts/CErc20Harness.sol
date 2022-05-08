@@ -111,8 +111,12 @@ contract CErc20Harness is CErc20Immutable {
         failTransferToAddresses[_to] = _fail;
     }
 
-    function harnessMintFresh(address account, uint256 mintAmount) public returns (uint256) {
-        (uint256 err, ) = super.mintFresh(account, mintAmount, false);
+    function harnessMintFresh(
+        address payer,
+        address account,
+        uint256 mintAmount
+    ) public returns (uint256) {
+        (uint256 err, ) = super.mintFresh(payer, account, mintAmount, false);
         return err;
     }
 
@@ -456,8 +460,12 @@ contract CErc20DelegateHarness is CErc20Delegate {
         failTransferToAddresses[_to] = _fail;
     }
 
-    function harnessMintFresh(address account, uint256 mintAmount) public returns (uint256) {
-        (uint256 err, ) = super.mintFresh(account, mintAmount, false);
+    function harnessMintFresh(
+        address payer,
+        address account,
+        uint256 mintAmount
+    ) public returns (uint256) {
+        (uint256 err, ) = super.mintFresh(payer, account, mintAmount, false);
         return err;
     }
 
@@ -654,8 +662,12 @@ contract CCollateralCapErc20DelegateHarness is CCollateralCapErc20Delegate {
         failTransferToAddresses[_to] = _fail;
     }
 
-    function harnessMintFresh(address account, uint256 mintAmount) public returns (uint256) {
-        (uint256 err, ) = super.mintFresh(account, mintAmount, false);
+    function harnessMintFresh(
+        address payer,
+        address account,
+        uint256 mintAmount
+    ) public returns (uint256) {
+        (uint256 err, ) = super.mintFresh(payer, account, mintAmount, false);
         return err;
     }
 
@@ -834,9 +846,13 @@ contract CWrappedNativeDelegateHarness is CWrappedNativeDelegate {
         failTransferToAddresses[_to] = _fail;
     }
 
-    function harnessMintFresh(address account, uint256 mintAmount) public returns (uint256) {
+    function harnessMintFresh(
+        address payer,
+        address account,
+        uint256 mintAmount
+    ) public returns (uint256) {
         // isNative is not important for mint fresh testing.
-        (uint256 err, ) = mintFresh(account, mintAmount, true);
+        (uint256 err, ) = mintFresh(payer, account, mintAmount, true);
         return err;
     }
 

@@ -277,6 +277,24 @@ describe('CTokenAdmin', () => {
     });
   });
 
+  describe('_setHelper()', () => {
+    beforeEach(async () => {
+      cToken = await makeCToken({admin: cTokenAdmin._address});
+    });
+
+    it('should only be callable by admin', async () => {
+      await expect(send(cTokenAdmin, '_setHelper', [cToken._address, root], {from: others})).rejects.toRevert('revert only the admin may call this function');
+
+      expect(await call(cToken, 'helper')).toEqual(address(0));
+    });
+
+    it('should succeed and set new helper', async () => {
+      expect(await send(cTokenAdmin, '_setHelper', [cToken._address, root], {from: admin})).toSucceed();
+
+      expect(await call(cToken, 'helper')).toEqual(root);
+    });
+  });
+
   describe('_setCollateralCap()', () => {
     const cap = etherMantissa(100);
 
