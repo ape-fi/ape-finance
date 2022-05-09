@@ -35,7 +35,11 @@ async function borrowFresh(cToken, borrower, borrowAmount) {
 async function borrow(cToken, borrower, borrowAmount, opts = {}) {
   // make sure to have a block delta so we accrue interest
   await send(cToken, 'harnessFastForward', [1]);
-  return send(cToken, 'borrow', [borrowAmount], {from: borrower});
+  let from = borrower;
+  if (opts.from) {
+    from = opts.from;
+  }
+  return send(cToken, 'borrow', [borrower, borrowAmount], {from: from});
 }
 
 async function preRepay(cToken, benefactor, borrower, repayAmount) {
@@ -57,13 +61,13 @@ async function repayBorrowFresh(cToken, payer, borrower, repayAmount) {
 async function repayBorrow(cToken, borrower, repayAmount) {
   // make sure to have a block delta so we accrue interest
   await send(cToken, 'harnessFastForward', [1]);
-  return send(cToken, 'repayBorrow', [repayAmount], {from: borrower});
+  return send(cToken, 'repayBorrow', [borrower, repayAmount], {from: borrower});
 }
 
 async function repayBorrowBehalf(cToken, payer, borrower, repayAmount) {
   // make sure to have a block delta so we accrue interest
   await send(cToken, 'harnessFastForward', [1]);
-  return send(cToken, 'repayBorrowBehalf', [borrower, repayAmount], {from: payer});
+  return send(cToken, 'repayBorrow', [borrower, repayAmount], {from: payer});
 }
 
 describe('CToken', function () {
@@ -186,6 +190,18 @@ describe('CToken', function () {
       await fastForward(cToken);
       expect(await borrow(cToken, borrower, borrowAmount)).toSucceed();
       expect(await balanceOf(cToken.underlying, borrower)).toEqualNumber(beforeAccountCash.plus(receiveAmount));
+    });
+
+    it("fails if borrow trigger by other", async () => {
+      await expect(borrow(cToken, borrower, borrowAmount, {from: root})).rejects.toRevert('revert invalid borrower');
+    });
+
+    it("borrows successfully by helper", async () => {
+      await send(cToken, '_setHelper', [root]);
+      const beforeAccountCash = await balanceOf(cToken.underlying, borrower);
+      await fastForward(cToken);
+      expect(await borrow(cToken, borrower, borrowAmount, {from: root})).toSucceed();
+      expect(await balanceOf(cToken.underlying, borrower)).toEqualNumber(beforeAccountCash.plus(borrowAmount));
     });
   });
 

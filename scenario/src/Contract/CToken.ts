@@ -16,21 +16,16 @@ export interface CTokenMethods {
   exchangeRateCurrent(): Callable<number>;
   getCash(): Callable<number>;
   accrueInterest(): Sendable<number>;
-  mint(): Sendable<number>;
-  mint(amount: encodedNumber): Sendable<number>;
-  mintNative(): Sendable<number>;
-  redeem(amount: encodedNumber): Sendable<number>;
-  redeemNative(amount: encodedNumber): Sendable<number>;
-  redeemUnderlying(amount: encodedNumber): Sendable<number>;
-  redeemUnderlyingNative(amount: encodedNumber): Sendable<number>;
-  borrow(amount: encodedNumber): Sendable<number>;
-  borrowNative(amount: encodedNumber): Sendable<number>;
-  repayBorrow(): Sendable<number>;
-  repayBorrow(amount: encodedNumber): Sendable<number>;
-  repayBorrowNative(): Sendable<number>;
-  repayBorrowBehalf(amount: string): Sendable<number>;
-  repayBorrowBehalf(address: string, amount: encodedNumber): Sendable<number>;
-  repayBorrowBehalfNative(address: string): Sendable<number>;
+  mint(): Sendable<number>; // old cEth
+  mint(minter: string, amount: encodedNumber): Sendable<number>;
+  mintNative(minter: string): Sendable<number>;
+  redeem(redeemer: string, tokens: encodedNumber, amount: encodedNumber): Sendable<number>;
+  redeemNative(redeemer: string, tokens: encodedNumber, amount: encodedNumber): Sendable<number>;
+  borrow(borrower: string, amount: encodedNumber): Sendable<number>;
+  borrowNative(borrower: string, amount: encodedNumber): Sendable<number>;
+  repayBorrow(): Sendable<number>; // old cEth
+  repayBorrow(address: string, amount: encodedNumber): Sendable<number>;
+  repayBorrowNative(address: string): Sendable<number>;
   liquidateBorrow(borrower: string, cTokenCollateral: string): Sendable<number>;
   liquidateBorrow(borrower: string, repayAmount: encodedNumber, cTokenCollateral: string): Sendable<number>;
   seize(liquidator: string, borrower: string, seizeTokens: encodedNumber, feeTokens: encodedNumber): Sendable<number>;

@@ -115,7 +115,7 @@ describe('Comptroller', () => {
       await enterMarkets([cToken], from);
       await send(cToken.underlying, 'harnessSetBalance', [from, balance], {from});
       await send(cToken.underlying, 'approve', [cToken._address, balance], {from});
-      await send(cToken, 'mint', [amount], {from});
+      await send(cToken, 'mint', [from, amount], {from});
       const {0: error, 1: liquidity, 2: shortfall} = await call(cToken.comptroller, 'getHypotheticalAccountLiquidity', [from, cToken._address, 0, 0]);
       expect(error).toEqualNumber(0);
       expect(liquidity).toEqualNumber(amount * collateralFactor * exchangeRate * underlyingPrice);

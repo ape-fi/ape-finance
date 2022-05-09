@@ -24,10 +24,6 @@ async function preMint(cToken, minter, mintAmount, exchangeRate) {
   await send(cToken, 'harnessSetExchangeRate', [etherMantissa(exchangeRate)]);
 }
 
-async function mintFresh(cToken, minter, mintAmount) {
-  return send(cToken, 'harnessMintFresh', [minter, mintAmount]);
-}
-
 describe('CToken', function () {
   let root, minter, accounts;
   beforeEach(async () => {

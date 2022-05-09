@@ -19,7 +19,7 @@ describe('Maximillion', () => {
   });
 
   describe("constructor", () => {
-    it.only("sets address of cWrapped", async () => {
+    it("sets address of cWrapped", async () => {
       expect(await call(maximillion, "cWrappedNative")).toEqual(cWrapped._address);
     });
   });

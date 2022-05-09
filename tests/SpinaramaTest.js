@@ -25,8 +25,8 @@ describe('Spinarama', () => {
       await send(cToken.underlying, 'harnessSetBalance', [from, 100], {from});
       await send(cToken.underlying, 'approve', [cToken._address, UInt256Max()], {from});
       await minerStop();
-      const p1 = send(cToken, 'mint', [1], {from});
-      const p2 = send(cToken, 'mint', [2], {from});
+      const p1 = send(cToken, 'mint', [from, 1], {from});
+      const p2 = send(cToken, 'mint', [from, 2], {from});
       await minerStart();
       expect(await p1).toSucceed();
       expect(await p2).toSucceed();
@@ -38,8 +38,8 @@ describe('Spinarama', () => {
       await send(cToken.underlying, 'harnessSetBalance', [from, 100], {from});
       await send(cToken.underlying, 'approve', [cToken._address, 10], {from});
       await minerStop();
-      const p1 = send(cToken, 'mint', [11], {from});
-      const p2 = send(cToken, 'mint', [10], {from});
+      const p1 = send(cToken, 'mint', [from, 11], {from});
+      const p2 = send(cToken, 'mint', [from, 10], {from});
       await expect(minerStart()).rejects.toRevert("revert Insufficient allowance");
       try {
         await p1;
@@ -58,8 +58,8 @@ describe('Spinarama', () => {
       await send(cToken.underlying, 'harnessSetBalance', [from, 100], {from});
       await send(cToken.underlying, 'approve', [cToken._address, 10], {from});
       await minerStop();
-      const p1 = send(cToken, 'mint', [10], {from});
-      const p2 = send(cToken, 'redeemUnderlying', [10], {from});
+      const p1 = send(cToken, 'mint', [from, 10], {from});
+      const p2 = send(cToken, 'redeem', [from, 0, 10], {from});
       await minerStart();
       expect(await p1).toSucceed();
       expect(await p2).toSucceed();
@@ -76,8 +76,8 @@ describe('Spinarama', () => {
       await send(cToken.underlying, 'harnessSetBalance', [cToken._address, 10]);
       await send(cToken.underlying, 'approve', [cToken._address, 10], {from});
       await minerStop();
-      const p1 = send(cToken, 'redeem', [10], {from});
-      const p2 = send(cToken, 'mint', [10], {from});
+      const p1 = send(cToken, 'redeem', [from, 10, 0], {from});
+      const p2 = send(cToken, 'mint', [from, 10], {from});
       await minerStart();
       expect(await p1).toSucceed();
       expect(await p2).toSucceed();
@@ -96,11 +96,11 @@ describe('Spinarama', () => {
       await send(cToken2.underlying, 'approve', [cToken2._address, 10], {from});
       await send(cToken2, 'harnessSetExchangeRate', [etherMantissa(1)]);
       expect(await enterMarkets([cToken1, cToken2], from)).toSucceed();
-      expect(await send(cToken1, 'mint', [10], {from})).toSucceed();
-      expect(await send(cToken2, 'borrow', [2], {from})).toSucceed();
+      expect(await send(cToken1, 'mint', [from, 10], {from})).toSucceed();
+      expect(await send(cToken2, 'borrow', [from, 2], {from})).toSucceed();
       await minerStop();
-      const p1 = send(cToken2, 'repayBorrow', [1], {from});
-      const p2 = send(cToken2, 'repayBorrow', [1], {from});
+      const p1 = send(cToken2, 'repayBorrow', [from, 1], {from});
+      const p2 = send(cToken2, 'repayBorrow', [from, 1], {from});
       await minerStart();
       expect(await p1).toSucceed();
       expect(await p2).toSucceed();

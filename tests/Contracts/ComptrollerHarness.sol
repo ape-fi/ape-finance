@@ -100,10 +100,12 @@ contract BoolComptroller is ComptrollerInterface {
 
     function mintAllowed(
         address _cToken,
+        address _payer,
         address _minter,
         uint256 _mintAmount
     ) public returns (uint256) {
         _cToken;
+        _payer;
         _minter;
         _mintAmount;
         return allowMint ? noError : opaqueError;
@@ -111,11 +113,13 @@ contract BoolComptroller is ComptrollerInterface {
 
     function mintVerify(
         address _cToken,
+        address _payer,
         address _minter,
         uint256 _mintAmount,
         uint256 _mintTokens
     ) external {
         _cToken;
+        _payer;
         _minter;
         _mintAmount;
         _mintTokens;
