@@ -60,7 +60,7 @@ describe('Comptroller', () => {
       comptroller = cToken.comptroller;
     });
 
-    let globalMethods = ["Transfer", "Seize"];
+    let globalMethods = ["Seize"];
     describe('succeeding', () => {
       let pauseGuardian;
       beforeEach(async () => {
@@ -95,12 +95,6 @@ describe('Comptroller', () => {
         it(`pauses ${method}`, async() => {
           await send(comptroller, `_set${method}Paused`, [true], {from: pauseGuardian});
           switch (method) {
-          case "Transfer":
-            await expect(
-              send(comptroller, 'transferAllowed', [address(1), address(2), address(3), 1])
-            ).rejects.toRevert(`revert ${method.toLowerCase()} is paused`);
-            break;
-
           case "Seize":
             await expect(
               send(comptroller, 'seizeAllowed', [address(1), address(2), address(3), address(4), 1])
