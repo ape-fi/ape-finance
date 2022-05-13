@@ -177,45 +177,6 @@ Test "Failed to unregister collateral for exit market failed"
     ExitMarket Geoff cZRX
     Assert Revert "revert insufficient liquidity"
 
-Test "Transfer cToken successfully"
-    CollateralCap
-    CToken cZRX SetCollateralCap 20e9
-    EnterMarkets Geoff cZRX
-    Prep Geoff Some ZRX cZRX
-    Mint Geoff 50e18 cZRX
-    Assert Equal (Erc20 cZRX TokenBalance Geoff) (Exactly 50e9)
-    Assert Equal (CToken cZRX CollateralBalance Geoff) (Exactly 20e9)
-    Assert Equal (Erc20 cZRX TokenBalance Torrey) Zero
-    Assert Equal (CToken cZRX CollateralBalance Torrey) Zero
-    Assert Equal (CToken cZRX TotalCollateralTokens) (Exactly 20e9)
-    Transfer Geoff Torrey 30e9 cZRX
-    Assert Equal (Erc20 cZRX TokenBalance Geoff) (Exactly 20e9)
-    Assert Equal (CToken cZRX CollateralBalance Geoff) (Exactly 20e9)
-    Assert Equal (Erc20 cZRX TokenBalance Torrey) (Exactly 30e9)
-    Assert Equal (CToken cZRX CollateralBalance Torrey) Zero
-    Assert Equal (CToken cZRX TotalCollateralTokens) (Exactly 20e9)
-    Transfer Geoff Torrey 10e9 cZRX
-    Assert Equal (Erc20 cZRX TokenBalance Geoff) (Exactly 10e9)
-    Assert Equal (CToken cZRX CollateralBalance Geoff) (Exactly 10e9)
-    Assert Equal (Erc20 cZRX TokenBalance Torrey) (Exactly 40e9)
-    Assert Equal (CToken cZRX CollateralBalance Torrey) (Exactly 10e9)
-    Assert Equal (CToken cZRX TotalCollateralTokens) (Exactly 20e9)
-
-Test "Failed to transfer cToken for comptroller rejected"
-    CollateralCap
-    ListedCToken BAT cBAT initialExchangeRate:1e9
-    GiveCToken cBAT 10e18 BAT -- Faucet some bat to borrow
-    EnterMarkets Geoff cZRX
-    Prep Geoff Some ZRX cZRX
-    Mint Geoff 50e18 cZRX
-    Borrow Geoff 1e18 cBAT
-    Assert Equal (CToken cBAT BorrowBalance Geoff) (Exactly 1e18)
-    Assert Equal (Erc20 BAT TokenBalance Geoff) (Exactly 1e18)
-    -- 2e9 cZRX is used as collateral
-    AllowFailures
-    Transfer Geoff Torrey 49e9 cZRX
-    Assert Revert "revert insufficient liquidity"
-
 Test "Seize collateral tokens"
     CollateralCap
     ListedCTokenImmutable EVL cEVL initialExchangeRate:1e9 cTokenType:CEvil

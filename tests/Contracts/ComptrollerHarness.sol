@@ -64,7 +64,6 @@ contract BoolComptroller is ComptrollerInterface {
     bool allowRepayBorrow = true;
     bool allowLiquidateBorrow = true;
     bool allowSeize = true;
-    bool allowTransfer = true;
 
     bool verifyMint = true;
     bool verifyRedeem = true;
@@ -72,7 +71,6 @@ contract BoolComptroller is ComptrollerInterface {
     bool verifyRepayBorrow = true;
     bool verifyLiquidateBorrow = true;
     bool verifySeize = true;
-    bool verifyTransfer = true;
 
     bool failCalculateSeizeTokens;
     uint256 calculatedSeizeTokens;
@@ -262,32 +260,6 @@ contract BoolComptroller is ComptrollerInterface {
         require(verifySeize, "seizeVerify rejected seize");
     }
 
-    function transferAllowed(
-        address _cToken,
-        address _src,
-        address _dst,
-        uint256 _transferTokens
-    ) public returns (uint256) {
-        _cToken;
-        _src;
-        _dst;
-        _transferTokens;
-        return allowTransfer ? noError : opaqueError;
-    }
-
-    function transferVerify(
-        address _cToken,
-        address _src,
-        address _dst,
-        uint256 _transferTokens
-    ) external {
-        _cToken;
-        _src;
-        _dst;
-        _transferTokens;
-        require(verifyTransfer, "transferVerify rejected transfer");
-    }
-
     /*** Special Liquidation Calculation ***/
 
     function liquidateCalculateSeizeTokens(
@@ -351,14 +323,6 @@ contract BoolComptroller is ComptrollerInterface {
 
     function setSeizeVerify(bool verifySeize_) public {
         verifySeize = verifySeize_;
-    }
-
-    function setTransferAllowed(bool allowTransfer_) public {
-        allowTransfer = allowTransfer_;
-    }
-
-    function setTransferVerify(bool verifyTransfer_) public {
-        verifyTransfer = verifyTransfer_;
     }
 
     /*** Liquidity/Liquidation Calculations ***/

@@ -84,8 +84,11 @@ describe('CompoundLens', () => {
       );
     });
 
-    it('is correct for crEth', async () => {
+    it.only('is correct for crEth', async () => {
       let crEth = await makeCToken({kind: 'cether'});
+      console.log(crEth.comptroller._address);
+      const a = await call(compoundLens, 'cTokenMetadata', [crEth._address]);
+      console.log(a)
       expect(
         cullTuple(await call(compoundLens, 'cTokenMetadata', [crEth._address]))
       ).toEqual({

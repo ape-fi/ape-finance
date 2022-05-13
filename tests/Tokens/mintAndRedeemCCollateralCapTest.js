@@ -133,7 +133,7 @@ describe('CToken', function () {
           await expect(mintFresh(cToken, payer, minter, mintAmount)).rejects.toRevert('revert transfer failed');
         });
 
-        it("transfers the underlying cash, tokens, and emits Mint, Transfer events", async () => {
+        it("transfers the underlying cash, tokens, and emits Mint event", async () => {
           const beforeBalances = await getBalances([cToken], [minter]);
           const result = await mintFresh(cToken, payer, minter, mintAmount);
           const afterBalances = await getBalances([cToken], [minter]);
@@ -143,11 +143,6 @@ describe('CToken', function () {
             minter,
             mintAmount: mintAmount.toString(),
             mintTokens: mintTokens.toString()
-          });
-          expect(result).toHaveLog(['Transfer', 1], {
-            from: cToken._address,
-            to: minter,
-            amount: mintTokens.toString()
           });
           if (benefactorIsPayer) {
             expect(afterBalances).toEqual(await adjustBalances(beforeBalances, [
@@ -279,7 +274,7 @@ describe('CToken', function () {
         await expect(redeemFresh(cToken, redeemer, redeemTokens, redeemAmount)).rejects.toRevert("revert subtraction underflow");
       });
 
-      it("transfers the underlying cash, tokens, and emits Redeem, Transfer events", async () => {
+      it("transfers the underlying cash, tokens, and emits Redeem event", async () => {
         const beforeBalances = await getBalances([cToken], [redeemer]);
         const result = await redeemFresh(cToken, redeemer, redeemTokens, redeemAmount);
         const afterBalances = await getBalances([cToken], [redeemer]);
@@ -288,11 +283,6 @@ describe('CToken', function () {
           redeemer,
           redeemAmount: redeemAmount.toString(),
           redeemTokens: redeemTokens.toString()
-        });
-        expect(result).toHaveLog(['Transfer', 1], {
-          from: redeemer,
-          to: cToken._address,
-          amount: redeemTokens.toString()
         });
         expect(afterBalances).toEqual(await adjustBalances(beforeBalances, [
           [cToken, redeemer, 'cash', redeemAmount],
