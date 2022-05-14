@@ -124,7 +124,7 @@ describe('Comptroller', () => {
 
         it(`PauseGuardian can pause of ${method}GuardianPaused`, async () => {
           result = await send(comptroller, `_set${method}Paused`, [cToken._address, true], {from: pauseGuardian});
-          expect(result).toHaveLog(`ActionPaused`, {cToken: cToken._address, action: method, pauseState: true});
+          expect(result).toHaveLog(`ActionPaused`, {apeToken: cToken._address, action: method, pauseState: true});
 
           let camelCase = method.charAt(0).toLowerCase() + method.substring(1);
 
@@ -134,7 +134,7 @@ describe('Comptroller', () => {
           await expect(send(comptroller, `_set${method}Paused`, [cToken._address, false], {from: pauseGuardian})).rejects.toRevert("revert admin only");
           result = await send(comptroller, `_set${method}Paused`, [cToken._address, false]);
 
-          expect(result).toHaveLog(`ActionPaused`, {cToken: cToken._address, action: method, pauseState: false});
+          expect(result).toHaveLog(`ActionPaused`, {apeToken: cToken._address, action: method, pauseState: false});
 
           state = await call(comptroller, `${camelCase}GuardianPaused`, [cToken._address]);
           expect(state).toEqual(false);

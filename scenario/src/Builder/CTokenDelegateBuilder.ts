@@ -8,10 +8,10 @@ import { Arg, Fetcher, getFetcherValue } from '../Command';
 import { storeAndSaveContract } from '../Networks';
 import { getContract, getTestContract } from '../Contract';
 
-const CErc20DelegateContract = getContract('CErc20Delegate');
-const CErc20DelegateScenarioContract = getTestContract('CErc20DelegateScenario');
-const CCollateralCapErc20DelegateScenarioContract = getContract('CCollateralCapErc20DelegateScenario');
-const CWrappedNativeDelegateScenarioContract = getContract('CWrappedNativeDelegateScenario');
+const CErc20DelegateContract = getContract('ApeErc20Delegate');
+const CErc20DelegateScenarioContract = getTestContract('ApeErc20DelegateScenario');
+const CCollateralCapErc20DelegateScenarioContract = getContract('ApeCollateralCapErc20DelegateScenario');
+const CWrappedNativeDelegateScenarioContract = getContract('ApeWrappedNativeDelegateScenario');
 
 export interface CTokenDelegateData {
   invokation: Invokation<CErc20Delegate>;
@@ -44,7 +44,7 @@ export async function buildCTokenDelegate(
         return {
           invokation: await CErc20DelegateContract.deploy<CErc20Delegate>(world, from, []),
           name: name.val,
-          contract: 'CErc20Delegate',
+          contract: 'ApeErc20Delegate',
           description: 'Standard CErc20 Delegate'
         };
       }
@@ -68,7 +68,7 @@ export async function buildCTokenDelegate(
         return {
           invokation: await CErc20DelegateScenarioContract.deploy<CErc20DelegateScenario>(world, from, []),
           name: name.val,
-          contract: 'CErc20DelegateScenario',
+          contract: 'ApeErc20DelegateScenario',
           description: 'Scenario CErc20 Delegate'
         };
       }
@@ -91,7 +91,7 @@ export async function buildCTokenDelegate(
         return {
           invokation: await CCollateralCapErc20DelegateScenarioContract.deploy<CErc20Delegate>(world, from, []),
           name: name.val,
-          contract: 'CCollateralCapErc20DelegateScenario',
+          contract: 'ApeCollateralCapErc20DelegateScenario',
           description: 'Collateral Cap CErc20 Delegate'
         };
       }
@@ -114,7 +114,7 @@ export async function buildCTokenDelegate(
         return {
           invokation: await CWrappedNativeDelegateScenarioContract.deploy<CErc20Delegate>(world, from, []),
           name: name.val,
-          contract: 'CWrappedNativeDelegateScenario',
+          contract: 'ApeWrappedNativeDelegateScenario',
           description: 'Wrapped Native CErc20 Delegate'
         };
       }
@@ -138,7 +138,7 @@ export async function buildCTokenDelegate(
     invokation,
     [
       {
-        index: ['CTokenDelegate', delegateData.name],
+        index: ['ApeTokenDelegate', delegateData.name],
         data: {
           address: cTokenDelegate._address,
           contract: delegateData.contract,

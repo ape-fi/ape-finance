@@ -1,16 +1,16 @@
 pragma solidity ^0.5.16;
 pragma experimental ABIEncoderV2;
 
-import "../../contracts/Legacy/CErc20Immutable.sol";
-import "../../contracts/CErc20Delegator.sol";
-import "../../contracts/CErc20Delegate.sol";
-import "../../contracts/CCollateralCapErc20Delegate.sol";
-import "../../contracts/Legacy/CCollateralCapErc20Delegator.sol";
-import "../../contracts/CWrappedNativeDelegate.sol";
-import "../../contracts/CWrappedNativeDelegator.sol";
+import "../../contracts/Legacy/ApeErc20Immutable.sol";
+import "../../contracts/ApeErc20Delegator.sol";
+import "../../contracts/ApeErc20Delegate.sol";
+import "../../contracts/ApeCollateralCapErc20Delegate.sol";
+import "../../contracts/Legacy/ApeCollateralCapErc20Delegator.sol";
+import "../../contracts/ApeWrappedNativeDelegate.sol";
+import "../../contracts/ApeWrappedNativeDelegator.sol";
 import "./ComptrollerScenario.sol";
 
-contract CErc20Harness is CErc20Immutable {
+contract ApeErc20Harness is ApeErc20Immutable {
     uint256 public blockNumber = 100000;
     uint256 harnessExchangeRate;
     bool harnessExchangeRateStored;
@@ -28,7 +28,7 @@ contract CErc20Harness is CErc20Immutable {
         address payable admin_
     )
         public
-        CErc20Immutable(
+        ApeErc20Immutable(
             underlying_,
             comptroller_,
             interestRateModel_,
@@ -122,10 +122,10 @@ contract CErc20Harness is CErc20Immutable {
 
     function harnessRedeemFresh(
         address payable account,
-        uint256 cTokenAmount,
+        uint256 apeTokenAmount,
         uint256 underlyingAmount
     ) public returns (uint256) {
-        return super.redeemFresh(account, cTokenAmount, underlyingAmount, false);
+        return super.redeemFresh(account, apeTokenAmount, underlyingAmount, false);
     }
 
     function harnessAccountBorrows(address account) public view returns (uint256 principal, uint256 interestIndex) {
@@ -162,9 +162,9 @@ contract CErc20Harness is CErc20Immutable {
         address liquidator,
         address borrower,
         uint256 repayAmount,
-        CToken cTokenCollateral
+        ApeToken apeTokenCollateral
     ) public returns (uint256) {
-        (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, cTokenCollateral, false);
+        (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, apeTokenCollateral, false);
         return err;
     }
 
@@ -189,7 +189,7 @@ contract CErc20Harness is CErc20Immutable {
     }
 }
 
-contract CErc20Scenario is CErc20Immutable {
+contract ApeErc20Scenario is ApeErc20Immutable {
     constructor(
         address underlying_,
         ComptrollerInterface comptroller_,
@@ -201,7 +201,7 @@ contract CErc20Scenario is CErc20Immutable {
         address payable admin_
     )
         public
-        CErc20Immutable(
+        ApeErc20Immutable(
             underlying_,
             comptroller_,
             interestRateModel_,
@@ -227,7 +227,7 @@ contract CErc20Scenario is CErc20Immutable {
     }
 }
 
-contract CEvil is CErc20Scenario {
+contract CEvil is ApeErc20Scenario {
     constructor(
         address underlying_,
         ComptrollerInterface comptroller_,
@@ -239,7 +239,7 @@ contract CEvil is CErc20Scenario {
         address payable admin_
     )
         public
-        CErc20Scenario(
+        ApeErc20Scenario(
             underlying_,
             comptroller_,
             interestRateModel_,
@@ -252,7 +252,7 @@ contract CEvil is CErc20Scenario {
     {}
 
     function evilSeize(
-        CToken treasure,
+        ApeToken treasure,
         address liquidator,
         address borrower,
         uint256 seizeTokens,
@@ -262,7 +262,7 @@ contract CEvil is CErc20Scenario {
     }
 }
 
-contract CErc20DelegatorScenario is CErc20Delegator {
+contract ApeErc20DelegatorScenario is ApeErc20Delegator {
     constructor(
         address underlying_,
         ComptrollerInterface comptroller_,
@@ -276,7 +276,7 @@ contract CErc20DelegatorScenario is CErc20Delegator {
         bytes memory becomeImplementationData
     )
         public
-        CErc20Delegator(
+        ApeErc20Delegator(
             underlying_,
             comptroller_,
             interestRateModel_,
@@ -299,7 +299,7 @@ contract CErc20DelegatorScenario is CErc20Delegator {
     }
 }
 
-contract CCollateralCapErc20DelegatorScenario is CCollateralCapErc20Delegator {
+contract ApeCollateralCapErc20DelegatorScenario is ApeCollateralCapErc20Delegator {
     constructor(
         address underlying_,
         ComptrollerInterface comptroller_,
@@ -313,7 +313,7 @@ contract CCollateralCapErc20DelegatorScenario is CCollateralCapErc20Delegator {
         bytes memory becomeImplementationData
     )
         public
-        CCollateralCapErc20Delegator(
+        ApeCollateralCapErc20Delegator(
             underlying_,
             comptroller_,
             interestRateModel_,
@@ -336,7 +336,7 @@ contract CCollateralCapErc20DelegatorScenario is CCollateralCapErc20Delegator {
     }
 }
 
-contract CWrappedNativeDelegatorScenario is CWrappedNativeDelegator {
+contract ApeWrappedNativeDelegatorScenario is ApeWrappedNativeDelegator {
     constructor(
         address underlying_,
         ComptrollerInterface comptroller_,
@@ -350,7 +350,7 @@ contract CWrappedNativeDelegatorScenario is CWrappedNativeDelegator {
         bytes memory becomeImplementationData
     )
         public
-        CWrappedNativeDelegator(
+        ApeWrappedNativeDelegator(
             underlying_,
             comptroller_,
             interestRateModel_,
@@ -375,7 +375,7 @@ contract CWrappedNativeDelegatorScenario is CWrappedNativeDelegator {
     function() external payable {}
 }
 
-contract CErc20DelegateHarness is CErc20Delegate {
+contract ApeErc20DelegateHarness is ApeErc20Delegate {
     event Log(string x, address y);
     event Log(string x, uint256 y);
 
@@ -471,10 +471,10 @@ contract CErc20DelegateHarness is CErc20Delegate {
 
     function harnessRedeemFresh(
         address payable account,
-        uint256 cTokenAmount,
+        uint256 apeTokenAmount,
         uint256 underlyingAmount
     ) public returns (uint256) {
-        return super.redeemFresh(account, cTokenAmount, underlyingAmount, false);
+        return super.redeemFresh(account, apeTokenAmount, underlyingAmount, false);
     }
 
     function harnessAccountBorrows(address account) public view returns (uint256 principal, uint256 interestIndex) {
@@ -511,9 +511,9 @@ contract CErc20DelegateHarness is CErc20Delegate {
         address liquidator,
         address borrower,
         uint256 repayAmount,
-        CToken cTokenCollateral
+        ApeToken apeTokenCollateral
     ) public returns (uint256) {
-        (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, cTokenCollateral, false);
+        (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, apeTokenCollateral, false);
         return err;
     }
 
@@ -538,7 +538,7 @@ contract CErc20DelegateHarness is CErc20Delegate {
     }
 }
 
-contract CErc20DelegateScenario is CErc20Delegate {
+contract ApeErc20DelegateScenario is ApeErc20Delegate {
     constructor() public {}
 
     function setTotalBorrows(uint256 totalBorrows_) public {
@@ -555,7 +555,7 @@ contract CErc20DelegateScenario is CErc20Delegate {
     }
 }
 
-contract CErc20DelegateScenarioExtra is CErc20DelegateScenario {
+contract ApeErc20DelegateScenarioExtra is ApeErc20DelegateScenario {
     function iHaveSpoken() public pure returns (string memory) {
         return "i have spoken";
     }
@@ -569,7 +569,7 @@ contract CErc20DelegateScenarioExtra is CErc20DelegateScenario {
     }
 }
 
-contract CCollateralCapErc20DelegateHarness is CCollateralCapErc20Delegate {
+contract ApeCollateralCapErc20DelegateHarness is ApeCollateralCapErc20Delegate {
     event Log(string x, address y);
     event Log(string x, uint256 y);
 
@@ -673,10 +673,10 @@ contract CCollateralCapErc20DelegateHarness is CCollateralCapErc20Delegate {
 
     function harnessRedeemFresh(
         address payable account,
-        uint256 cTokenAmount,
+        uint256 apeTokenAmount,
         uint256 underlyingAmount
     ) public returns (uint256) {
-        return super.redeemFresh(account, cTokenAmount, underlyingAmount, false);
+        return super.redeemFresh(account, apeTokenAmount, underlyingAmount, false);
     }
 
     function harnessAccountBorrows(address account) public view returns (uint256 principal, uint256 interestIndex) {
@@ -713,9 +713,9 @@ contract CCollateralCapErc20DelegateHarness is CCollateralCapErc20Delegate {
         address liquidator,
         address borrower,
         uint256 repayAmount,
-        CToken cTokenCollateral
+        ApeToken apeTokenCollateral
     ) public returns (uint256) {
-        (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, cTokenCollateral, false);
+        (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, apeTokenCollateral, false);
         return err;
     }
 
@@ -744,7 +744,7 @@ contract CCollateralCapErc20DelegateHarness is CCollateralCapErc20Delegate {
     }
 }
 
-contract CCollateralCapErc20DelegateScenario is CCollateralCapErc20Delegate {
+contract ApeCollateralCapErc20DelegateScenario is ApeCollateralCapErc20Delegate {
     constructor() public {}
 
     function setTotalBorrows(uint256 totalBorrows_) public {
@@ -761,7 +761,7 @@ contract CCollateralCapErc20DelegateScenario is CCollateralCapErc20Delegate {
     }
 }
 
-contract CWrappedNativeDelegateHarness is CWrappedNativeDelegate {
+contract ApeWrappedNativeDelegateHarness is ApeWrappedNativeDelegate {
     event Log(string x, address y);
     event Log(string x, uint256 y);
 
@@ -858,11 +858,11 @@ contract CWrappedNativeDelegateHarness is CWrappedNativeDelegate {
 
     function harnessRedeemFresh(
         address payable account,
-        uint256 cTokenAmount,
+        uint256 apeTokenAmount,
         uint256 underlyingAmount
     ) public returns (uint256) {
         // isNative is not important for redeem fresh testing.
-        return redeemFresh(account, cTokenAmount, underlyingAmount, true);
+        return redeemFresh(account, apeTokenAmount, underlyingAmount, true);
     }
 
     function harnessAccountBorrows(address account) public view returns (uint256 principal, uint256 interestIndex) {
@@ -901,10 +901,10 @@ contract CWrappedNativeDelegateHarness is CWrappedNativeDelegate {
         address liquidator,
         address borrower,
         uint256 repayAmount,
-        CToken cTokenCollateral
+        ApeToken apeTokenCollateral
     ) public returns (uint256) {
         // isNative is not important for liquidate borrow fresh testing.
-        (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, cTokenCollateral, true);
+        (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, apeTokenCollateral, true);
         return err;
     }
 
@@ -939,7 +939,7 @@ contract CWrappedNativeDelegateHarness is CWrappedNativeDelegate {
     function() external payable {}
 }
 
-contract CWrappedNativeDelegateScenario is CWrappedNativeDelegate {
+contract ApeWrappedNativeDelegateScenario is ApeWrappedNativeDelegate {
     constructor() public {}
 
     function setTotalBorrows(uint256 totalBorrows_) public {

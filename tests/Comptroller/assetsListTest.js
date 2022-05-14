@@ -68,7 +68,7 @@ describe('assetListTest', () => {
       const result1 = await enterAndCheckMarkets([OMG], [OMG]);
       const result2 = await enterAndCheckMarkets([OMG], [OMG]);
       expect(result1).toHaveLog('MarketEntered', {
-          cToken: OMG._address,
+          apeToken: OMG._address,
           account: customer
         });
       expect(result2.events).toEqual({});
@@ -164,7 +164,7 @@ describe('assetListTest', () => {
     it("reverts when called by not a ctoken", async () => {
       await expect(
         send(comptroller, 'borrowAllowed', [BAT._address, customer, 1], {from: customer})
-      ).rejects.toRevert('revert sender must be cToken');
+      ).rejects.toRevert('revert sender must be apeToken');
 
       const assetsIn = await call(comptroller, 'getAssetsIn', [customer]);
 

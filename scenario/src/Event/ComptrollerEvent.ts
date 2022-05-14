@@ -128,18 +128,6 @@ async function exitMarket(world: World, from: string, comptroller: Comptroller, 
   return world;
 }
 
-async function updateCTokenVersion(world: World, from: string, comptroller: Comptroller, cToken: CToken, version: NumberV): Promise<World> {
-  let invokation = await invoke(world, comptroller.methods.updateCTokenVersion(cToken._address, version.encode()), from, ComptrollerErrorReporter);
-
-  world = addAction(
-    world,
-    `Update market ${cToken.name} version to ${version.show()}`,
-    invokation
-  );
-
-  return world;
-}
-
 async function setPriceOracle(world: World, from: string, comptroller: Comptroller, priceOracleAddr: string): Promise<World> {
   let invokation = await invoke(world, comptroller.methods._setPriceOracle(priceOracleAddr), from, ComptrollerErrorReporter);
 
@@ -409,20 +397,6 @@ export function comptrollerCommands() {
         new Arg("cToken", getCTokenV)
       ],
       (world, from, {comptroller, cToken}) => exitMarket(world, from, comptroller, cToken._address)
-    ),
-    new Command<{comptroller: Comptroller, cToken: CToken, version: NumberV}>(`
-        #### UpdateCTokenVersion
-
-        * "Comptroller UpdateCTokenVersion <CToken> <Number>" - Update a CToken's version
-          * E.g. "Comptroller UpdateCTokenVersion cZRX 1"
-      `,
-      "UpdateCTokenVersion",
-      [
-        new Arg("comptroller", getComptroller, {implicit: true}),
-        new Arg("cToken", getCTokenV),
-        new Arg("version", getNumberV)
-      ],
-      (world, from, {comptroller, cToken, version}) => updateCTokenVersion(world, from, comptroller, cToken, version)
     ),
     new Command<{comptroller: Comptroller, liquidationIncentive: NumberV}>(`
         #### LiquidationIncentive

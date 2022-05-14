@@ -71,7 +71,7 @@ async function makeCToken(opts = {}) {
 
   switch (kind) {
     case 'cether':
-      cToken = await deploy('CEtherHarness',
+      cToken = await deploy('ApeEtherHarness',
         [
           comptroller._address,
           interestRateModel._address,
@@ -85,8 +85,8 @@ async function makeCToken(opts = {}) {
 
     case 'ccollateralcap':
       underlying = opts.underlying || await makeToken(opts.underlyingOpts);
-      cDelegatee = await deploy('CCollateralCapErc20DelegateHarness');
-      cDelegator = await deploy('CCollateralCapErc20Delegator',
+      cDelegatee = await deploy('ApeCollateralCapErc20DelegateHarness');
+      cDelegator = await deploy('ApeCollateralCapErc20Delegator',
         [
           underlying._address,
           comptroller._address,
@@ -100,13 +100,13 @@ async function makeCToken(opts = {}) {
           "0x0"
         ]
       );
-      cToken = await saddle.getContractAt('CCollateralCapErc20DelegateHarness', cDelegator._address);
+      cToken = await saddle.getContractAt('ApeCollateralCapErc20DelegateHarness', cDelegator._address);
       break;
 
     case 'cwrapped':
       underlying = await makeToken({kind: "wrapped"});
-      cDelegatee = await deploy('CWrappedNativeDelegateHarness');
-      cDelegator = await deploy('CWrappedNativeDelegator',
+      cDelegatee = await deploy('ApeWrappedNativeDelegateHarness');
+      cDelegator = await deploy('ApeWrappedNativeDelegator',
         [
           underlying._address,
           comptroller._address,
@@ -120,13 +120,13 @@ async function makeCToken(opts = {}) {
           "0x0"
         ]
       );
-      cToken = await saddle.getContractAt('CWrappedNativeDelegateHarness', cDelegator._address); // XXXS at
+      cToken = await saddle.getContractAt('ApeWrappedNativeDelegateHarness', cDelegator._address); // XXXS at
       break;
 
     case 'cevil':
       underlying = await makeToken({kind: "evil"});
       cDelegatee = await deploy('CCollaterlaCapErc20CheckRepayDelegateHarness');
-      cDelegator = await deploy('CCollateralCapErc20Delegator',
+      cDelegator = await deploy('ApeCollateralCapErc20Delegator',
         [
           underlying._address,
           comptroller._address,
@@ -146,8 +146,8 @@ async function makeCToken(opts = {}) {
     case 'cerc20':
     default:
       underlying = opts.underlying || await makeToken(opts.underlyingOpts);
-      cDelegatee = await deploy('CErc20DelegateHarness');
-      cDelegator = await deploy('CErc20Delegator',
+      cDelegatee = await deploy('ApeErc20DelegateHarness');
+      cDelegator = await deploy('ApeErc20Delegator',
         [
           underlying._address,
           comptroller._address,
@@ -161,7 +161,7 @@ async function makeCToken(opts = {}) {
           "0x0"
         ]
       );
-      cToken = await saddle.getContractAt('CErc20DelegateHarness', cDelegator._address); // XXXS at
+      cToken = await saddle.getContractAt('ApeErc20DelegateHarness', cDelegator._address); // XXXS at
       break;
   }
 
@@ -239,7 +239,7 @@ async function makeCTokenAdmin(opts = {}) {
   } = opts || {};
 
   const admin = opts.admin || root;
-  return await deploy('MockCTokenAdmin', [admin]);
+  return await deploy('MockApeTokenAdmin', [admin]);
 }
 
 async function makeToken(opts = {}) {

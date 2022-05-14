@@ -1,7 +1,7 @@
 pragma solidity ^0.5.16;
 
 import "../../contracts/Comptroller.sol";
-import "../../contracts/CToken.sol";
+import "../../contracts/ApeToken.sol";
 import "../../contracts/PriceOracle/PriceOracle.sol";
 
 contract ComptrollerKovan is Comptroller {
@@ -80,29 +80,29 @@ contract BoolComptroller is ComptrollerInterface {
 
     /*** Assets You Are In ***/
 
-    function enterMarkets(address[] calldata _cTokens) external {
-        _cTokens;
+    function enterMarkets(address[] calldata _apeTokens) external {
+        _apeTokens;
     }
 
-    function exitMarket(address _cToken) external {
-        _cToken;
+    function exitMarket(address _apeToken) external {
+        _apeToken;
     }
 
-    function checkMembership(address _account, CToken _cToken) external view returns (bool) {
+    function checkMembership(address _account, ApeToken _apeToken) external view returns (bool) {
         _account;
-        _cToken;
+        _apeToken;
         return true;
     }
 
     /*** Policy Hooks ***/
 
     function mintAllowed(
-        address _cToken,
+        address _apeToken,
         address _payer,
         address _minter,
         uint256 _mintAmount
     ) public returns (uint256) {
-        _cToken;
+        _apeToken;
         _payer;
         _minter;
         _mintAmount;
@@ -110,13 +110,13 @@ contract BoolComptroller is ComptrollerInterface {
     }
 
     function mintVerify(
-        address _cToken,
+        address _apeToken,
         address _payer,
         address _minter,
         uint256 _mintAmount,
         uint256 _mintTokens
     ) external {
-        _cToken;
+        _apeToken;
         _payer;
         _minter;
         _mintAmount;
@@ -125,23 +125,23 @@ contract BoolComptroller is ComptrollerInterface {
     }
 
     function redeemAllowed(
-        address _cToken,
+        address _apeToken,
         address _redeemer,
         uint256 _redeemTokens
     ) public returns (uint256) {
-        _cToken;
+        _apeToken;
         _redeemer;
         _redeemTokens;
         return allowRedeem ? noError : opaqueError;
     }
 
     function redeemVerify(
-        address _cToken,
+        address _apeToken,
         address _redeemer,
         uint256 _redeemAmount,
         uint256 _redeemTokens
     ) external {
-        _cToken;
+        _apeToken;
         _redeemer;
         _redeemAmount;
         _redeemTokens;
@@ -149,34 +149,34 @@ contract BoolComptroller is ComptrollerInterface {
     }
 
     function borrowAllowed(
-        address _cToken,
+        address _apeToken,
         address _borrower,
         uint256 _borrowAmount
     ) public returns (uint256) {
-        _cToken;
+        _apeToken;
         _borrower;
         _borrowAmount;
         return allowBorrow ? noError : opaqueError;
     }
 
     function borrowVerify(
-        address _cToken,
+        address _apeToken,
         address _borrower,
         uint256 _borrowAmount
     ) external {
-        _cToken;
+        _apeToken;
         _borrower;
         _borrowAmount;
         require(verifyBorrow, "borrowVerify rejected borrow");
     }
 
     function repayBorrowAllowed(
-        address _cToken,
+        address _apeToken,
         address _payer,
         address _borrower,
         uint256 _repayAmount
     ) public returns (uint256) {
-        _cToken;
+        _apeToken;
         _payer;
         _borrower;
         _repayAmount;
@@ -184,13 +184,13 @@ contract BoolComptroller is ComptrollerInterface {
     }
 
     function repayBorrowVerify(
-        address _cToken,
+        address _apeToken,
         address _payer,
         address _borrower,
         uint256 _repayAmount,
         uint256 _borrowerIndex
     ) external {
-        _cToken;
+        _apeToken;
         _payer;
         _borrower;
         _repayAmount;
@@ -199,14 +199,14 @@ contract BoolComptroller is ComptrollerInterface {
     }
 
     function liquidateBorrowAllowed(
-        address _cTokenBorrowed,
-        address _cTokenCollateral,
+        address _apeTokenBorrowed,
+        address _apeTokenCollateral,
         address _liquidator,
         address _borrower,
         uint256 _repayAmount
     ) public returns (uint256) {
-        _cTokenBorrowed;
-        _cTokenCollateral;
+        _apeTokenBorrowed;
+        _apeTokenCollateral;
         _liquidator;
         _borrower;
         _repayAmount;
@@ -214,15 +214,15 @@ contract BoolComptroller is ComptrollerInterface {
     }
 
     function liquidateBorrowVerify(
-        address _cTokenBorrowed,
-        address _cTokenCollateral,
+        address _apeTokenBorrowed,
+        address _apeTokenCollateral,
         address _liquidator,
         address _borrower,
         uint256 _repayAmount,
         uint256 _seizeTokens
     ) external {
-        _cTokenBorrowed;
-        _cTokenCollateral;
+        _apeTokenBorrowed;
+        _apeTokenCollateral;
         _liquidator;
         _borrower;
         _repayAmount;
@@ -231,14 +231,14 @@ contract BoolComptroller is ComptrollerInterface {
     }
 
     function seizeAllowed(
-        address _cTokenCollateral,
-        address _cTokenBorrowed,
+        address _apeTokenCollateral,
+        address _apeTokenBorrowed,
         address _borrower,
         address _liquidator,
         uint256 _seizeTokens
     ) public returns (uint256) {
-        _cTokenCollateral;
-        _cTokenBorrowed;
+        _apeTokenCollateral;
+        _apeTokenBorrowed;
         _liquidator;
         _borrower;
         _seizeTokens;
@@ -246,14 +246,14 @@ contract BoolComptroller is ComptrollerInterface {
     }
 
     function seizeVerify(
-        address _cTokenCollateral,
-        address _cTokenBorrowed,
+        address _apeTokenCollateral,
+        address _apeTokenBorrowed,
         address _liquidator,
         address _borrower,
         uint256 _seizeTokens
     ) external {
-        _cTokenCollateral;
-        _cTokenBorrowed;
+        _apeTokenCollateral;
+        _apeTokenBorrowed;
         _liquidator;
         _borrower;
         _seizeTokens;
@@ -263,12 +263,12 @@ contract BoolComptroller is ComptrollerInterface {
     /*** Special Liquidation Calculation ***/
 
     function liquidateCalculateSeizeTokens(
-        address _cTokenBorrowed,
-        address _cTokenCollateral,
+        address _apeTokenBorrowed,
+        address _apeTokenCollateral,
         uint256 _repayAmount
     ) public view returns (uint256, uint256) {
-        _cTokenBorrowed;
-        _cTokenCollateral;
+        _apeTokenBorrowed;
+        _apeTokenCollateral;
         _repayAmount;
         return (calculatedSeizeTokens, 0);
     }

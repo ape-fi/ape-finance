@@ -1,12 +1,12 @@
 pragma solidity ^0.5.16;
 
-import "../../../contracts/CErc20Delegator.sol";
+import "../../../contracts/ApeErc20Delegator.sol";
 import "../../../contracts/EIP20Interface.sol";
 
-import "./CTokenCollateral.sol";
+import "./ApeTokenCollateral.sol";
 
-contract CErc20DelegatorCertora is CErc20Delegator {
-    CTokenCollateral public otherToken;
+contract ApeErc20DelegatorCertora is ApeErc20Delegator {
+    ApeTokenCollateral public otherToken;
 
     constructor(
         address underlying_,
@@ -21,7 +21,7 @@ contract CErc20DelegatorCertora is CErc20Delegator {
         bytes memory becomeImplementationData
     )
         public
-        CErc20Delegator(
+        ApeErc20Delegator(
             underlying_,
             comptroller_,
             interestRateModel_,

@@ -4,8 +4,7 @@ import "./InterestRateModel.sol";
 import "./SafeMath.sol";
 
 /**
- * @title CREAM's TripleSlopeRateModel Contract
- * @author C.R.E.A.M. Finance
+ * @title ApeFinance's TripleSlopeRateModel Contract
  */
 contract TripleSlopeRateModel is InterestRateModel {
     using SafeMath for uint256;

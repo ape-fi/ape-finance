@@ -4,7 +4,6 @@ import "./FaucetToken.sol";
 
 /**
  * @title Fee Token
- * @author Compound
  * @notice A simple test token that charges fees on transfer. Used to mock USDT.
  */
 contract FeeToken is FaucetToken {

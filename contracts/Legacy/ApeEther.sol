@@ -1,15 +1,14 @@
 pragma solidity ^0.5.16;
 
-import "./CTokenDeprecated.sol";
+import "./ApeTokenDeprecated.sol";
 
 /**
- * @title Compound's CEther Contract
- * @notice CToken which wraps Ether
- * @author Compound
+ * @title ApeFinance's ApeEther Contract
+ * @notice ApeToken which wraps Ether
  */
-contract CEther is CTokenDeprecated {
+contract ApeEther is ApeTokenDeprecated {
     /**
-     * @notice Construct a new CEther money market
+     * @notice Construct a new ApeEther money market
      * @param comptroller_ The address of the Comptroller
      * @param interestRateModel_ The address of the interest rate model
      * @param initialExchangeRateMantissa_ The initial exchange rate, scaled by 1e18
@@ -39,7 +38,7 @@ contract CEther is CTokenDeprecated {
     /*** User Interface ***/
 
     /**
-     * @notice Sender supplies assets into the market and receives cTokens in exchange
+     * @notice Sender supplies assets into the market and receives apeTokens in exchange
      * @dev Reverts upon any failure
      */
     function mint() external payable {
@@ -48,10 +47,10 @@ contract CEther is CTokenDeprecated {
     }
 
     /**
-     * @notice Sender redeems cTokens in exchange for the underlying asset
+     * @notice Sender redeems apeTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param redeemer The redeemer
-     * @param redeemTokens The number of cTokens to redeem into underlying
+     * @param redeemTokens The number of apeTokens to redeem into underlying
      * @param redeemAmount The amount of underlying to redeem
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
@@ -87,16 +86,16 @@ contract CEther is CTokenDeprecated {
      * @notice The sender liquidates the borrowers collateral.
      *  The collateral seized is transferred to the liquidator.
      * @dev Reverts upon any failure
-     * @param borrower The borrower of this cToken to be liquidated
-     * @param cTokenCollateral The market in which to seize collateral from the borrower
+     * @param borrower The borrower of this apeToken to be liquidated
+     * @param apeTokenCollateral The market in which to seize collateral from the borrower
      */
-    function liquidateBorrow(address borrower, CTokenDeprecated cTokenCollateral) external payable {
-        (uint256 err, ) = liquidateBorrowInternal(borrower, msg.value, cTokenCollateral);
+    function liquidateBorrow(address borrower, ApeTokenDeprecated apeTokenCollateral) external payable {
+        (uint256 err, ) = liquidateBorrowInternal(borrower, msg.value, apeTokenCollateral);
         requireNoError(err, "liquidateBorrow failed");
     }
 
     /**
-     * @notice Send Ether to CEther to mint
+     * @notice Send Ether to ApeEther to mint
      */
     function() external payable {
         (uint256 err, ) = mintInternal(msg.value);

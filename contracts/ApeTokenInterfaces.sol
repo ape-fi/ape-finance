@@ -4,7 +4,7 @@ import "./ComptrollerInterface.sol";
 import "./InterestRateModel.sol";
 import "./ERC3156FlashBorrowerInterface.sol";
 
-contract CTokenStorage {
+contract ApeTokenStorage {
     /**
      * @dev Guard variable for re-entrancy checks
      */
@@ -17,7 +17,7 @@ contract CTokenStorage {
     }
 
     /**
-     * @notice CToken version
+     * @notice ApeToken version
      */
     Version public version;
 
@@ -58,7 +58,7 @@ contract CTokenStorage {
     address payable public pendingAdmin;
 
     /**
-     * @notice Contract which oversees inter-cToken operations
+     * @notice Contract which oversees inter-apeToken operations
      */
     ComptrollerInterface public comptroller;
 
@@ -68,7 +68,7 @@ contract CTokenStorage {
     InterestRateModel public interestRateModel;
 
     /**
-     * @notice Initial exchange rate used when minting the first CTokens (used when totalSupply = 0)
+     * @notice Initial exchange rate used when minting the first ApeTokens (used when totalSupply = 0)
      */
     uint256 internal initialExchangeRateMantissa;
 
@@ -133,9 +133,9 @@ contract CTokenStorage {
     address public helper;
 }
 
-contract CErc20Storage {
+contract ApeErc20Storage {
     /**
-     * @notice Underlying asset for this CToken
+     * @notice Underlying asset for this ApeToken
      */
     address public underlying;
 
@@ -147,7 +147,7 @@ contract CErc20Storage {
 
 contract CSupplyCapStorage {
     /**
-     * @notice Internal cash counter for this CToken. Should equal underlying.balanceOf(address(this)) for CERC20.
+     * @notice Internal cash counter for this ApeToken. Should equal underlying.balanceOf(address(this)) for ApeErc20.
      */
     uint256 public internalCash;
 }
@@ -165,18 +165,18 @@ contract CCollateralCapStorage {
     mapping(address => uint256) public accountCollateralTokens;
 
     /**
-     * @notice Collateral cap for this CToken, zero for no cap.
+     * @notice Collateral cap for this ApeToken, zero for no cap.
      */
     uint256 public collateralCap;
 }
 
 /*** Interface ***/
 
-contract CTokenInterface is CTokenStorage {
+contract ApeTokenInterface is ApeTokenStorage {
     /**
-     * @notice Indicator that this is a CToken contract (for inspection)
+     * @notice Indicator that this is a ApeToken contract (for inspection)
      */
-    bool public constant isCToken = true;
+    bool public constant isApeToken = true;
 
     /*** Market Events ***/
 
@@ -218,7 +218,7 @@ contract CTokenInterface is CTokenStorage {
         address liquidator,
         address borrower,
         uint256 repayAmount,
-        address cTokenCollateral,
+        address apeTokenCollateral,
         uint256 seizeTokens
     );
 
@@ -334,7 +334,7 @@ contract CTokenInterface is CTokenStorage {
     function _setHelper(address newHelper) public;
 }
 
-contract CErc20Interface is CErc20Storage {
+contract ApeErc20Interface is ApeErc20Storage {
     /*** User Interface ***/
 
     function mint(address minter, uint256 mintAmount) external returns (uint256);
@@ -352,13 +352,13 @@ contract CErc20Interface is CErc20Storage {
     function liquidateBorrow(
         address borrower,
         uint256 repayAmount,
-        CTokenInterface cTokenCollateral
+        ApeTokenInterface apeTokenCollateral
     ) external returns (uint256);
 
     function _addReserves(uint256 addAmount) external returns (uint256);
 }
 
-contract CWrappedNativeInterface is CErc20Interface {
+contract ApeWrappedNativeInterface is ApeErc20Interface {
     /**
      * @notice Flash loan fee ratio
      */
@@ -385,7 +385,7 @@ contract CWrappedNativeInterface is CErc20Interface {
 
     function repayBorrowNative(address borrower) external payable returns (uint256);
 
-    function liquidateBorrowNative(address borrower, CTokenInterface cTokenCollateral)
+    function liquidateBorrowNative(address borrower, ApeTokenInterface apeTokenCollateral)
         external
         payable
         returns (uint256);
@@ -404,7 +404,7 @@ contract CWrappedNativeInterface is CErc20Interface {
     function totalCollateralTokens() external view returns (uint256);
 }
 
-contract CCapableErc20Interface is CErc20Interface, CSupplyCapStorage {
+contract CCapableErc20Interface is ApeErc20Interface, CSupplyCapStorage {
     /**
      * @notice Flash loan fee ratio
      */
@@ -422,7 +422,7 @@ contract CCapableErc20Interface is CErc20Interface, CSupplyCapStorage {
     function gulp() external;
 }
 
-contract CCollateralCapErc20Interface is CCapableErc20Interface, CCollateralCapStorage {
+contract ApeCollateralCapErc20Interface is CCapableErc20Interface, CCollateralCapStorage {
     /*** Admin Events ***/
 
     /**

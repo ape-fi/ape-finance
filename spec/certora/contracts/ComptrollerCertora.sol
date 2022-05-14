@@ -8,7 +8,7 @@ contract ComptrollerCertora is Comptroller {
 
     function getHypotheticalAccountLiquidityInternal(
         address account,
-        CToken cTokenModify,
+        ApeToken cTokenModify,
         uint256 redeemTokens,
         uint256 borrowAmount
     )

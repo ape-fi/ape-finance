@@ -1,8 +1,7 @@
 pragma solidity ^0.5.16;
 
 /**
- * @title Compound's InterestRateModel Interface
- * @author Compound
+ * @title ApeFinance's InterestRateModel Interface
  */
 contract InterestRateModel {
     /// @notice Indicator that this is an InterestRateModel contract (for inspection)

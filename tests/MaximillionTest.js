@@ -20,7 +20,7 @@ describe('Maximillion', () => {
 
   describe("constructor", () => {
     it("sets address of cWrapped", async () => {
-      expect(await call(maximillion, "cWrappedNative")).toEqual(cWrapped._address);
+      expect(await call(maximillion, "apeWrappedNative")).toEqual(cWrapped._address);
     });
   });
 

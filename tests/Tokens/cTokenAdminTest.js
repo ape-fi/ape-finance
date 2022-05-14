@@ -25,12 +25,12 @@ describe('CTokenAdmin', () => {
   describe('getCTokenAdmin', () => {
     it('it is normal admin', async () => {
       cToken = await makeCToken();
-      expect(await call(cTokenAdmin, 'getCTokenAdmin', [cToken._address])).toEqual(root);
+      expect(await call(cTokenAdmin, 'getApeTokenAdmin', [cToken._address])).toEqual(root);
     });
 
     it('it is cToken admin contract', async () => {
       cToken = await makeCToken({admin: cTokenAdmin._address});
-      expect(await call(cTokenAdmin, 'getCTokenAdmin', [cToken._address])).toEqual(cTokenAdmin._address);
+      expect(await call(cTokenAdmin, 'getApeTokenAdmin', [cToken._address])).toEqual(cTokenAdmin._address);
     });
   });
 
@@ -329,7 +329,7 @@ describe('CTokenAdmin', () => {
     beforeEach(async () => {
       cToken = await makeCToken({admin: cTokenAdmin._address, kind: 'ccollateralcap'});
       oldImplementation = await call(cToken, 'implementation');
-      cCollateralCapDelegate = await deploy('CCollateralCapErc20Delegate');
+      cCollateralCapDelegate = await deploy('ApeCollateralCapErc20Delegate');
     });
 
     it('should only be callable by admin', async () => {
@@ -356,7 +356,7 @@ describe('CTokenAdmin', () => {
     beforeEach(async () => {
       cToken = await makeCToken({admin: cTokenAdmin._address, kind: 'ccollateralcap'});
       oldImplementation = await call(cToken, 'implementation');
-      cCollateralCapDelegate = await deploy('CCollateralCapErc20Delegate');
+      cCollateralCapDelegate = await deploy('ApeCollateralCapErc20Delegate');
     });
 
     it('should only be callable by admin', async () => {
@@ -381,7 +381,7 @@ describe('CTokenAdmin', () => {
     beforeEach(async () => {
       cToken = await makeCToken({admin: cTokenAdmin._address, kind: 'ccollateralcap'});
       oldImplementation = await call(cToken, 'implementation');
-      cCollateralCapDelegate = await deploy('CCollateralCapErc20Delegate');
+      cCollateralCapDelegate = await deploy('ApeCollateralCapErc20Delegate');
     });
 
     it('should only be callable by admin', async () => {

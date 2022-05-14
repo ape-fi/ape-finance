@@ -47,5 +47,5 @@ export function cTokenDelegateFetchers() {
 }
 
 export async function getCTokenDelegateValue(world: World, event: Event): Promise<Value> {
-  return await getFetcherValue<any, any>("CTokenDelegate", cTokenDelegateFetchers(), world, event);
+  return await getFetcherValue<any, any>("ApeTokenDelegate", cTokenDelegateFetchers(), world, event);
 }

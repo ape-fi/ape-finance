@@ -1,13 +1,12 @@
 pragma solidity ^0.5.16;
 
-import "./CTokenInterfaces.sol";
+import "./ApeTokenInterfaces.sol";
 
 /**
- * @title Compound's CWrappedNativeDelegator Contract
- * @notice CTokens which wrap an EIP-20 underlying and delegate to an implementation
- * @author Compound
+ * @title ApeFinance's ApeErc20Delegator Contract
+ * @notice ApeTokens which wrap an EIP-20 underlying and delegate to an implementation
  */
-contract CWrappedNativeDelegator is CTokenInterface, CWrappedNativeInterface, CDelegatorInterface {
+contract ApeErc20Delegator is ApeTokenInterface, ApeErc20Interface, CDelegatorInterface {
     /**
      * @notice Construct a new money market
      * @param underlying_ The address of the underlying asset
@@ -69,7 +68,7 @@ contract CWrappedNativeDelegator is CTokenInterface, CWrappedNativeInterface, CD
         bool allowResign,
         bytes memory becomeImplementationData
     ) public {
-        require(msg.sender == admin, "CWrappedNativeDelegator::_setImplementation: Caller must be admin");
+        require(msg.sender == admin, "ApeErc20Delegator::_setImplementation: Caller must be admin");
 
         if (allowResign) {
             delegateToImplementation(abi.encodeWithSignature("_resignImplementation()"));
@@ -84,7 +83,7 @@ contract CWrappedNativeDelegator is CTokenInterface, CWrappedNativeInterface, CD
     }
 
     /**
-     * @notice Sender supplies assets into the market and receives cTokens in exchange
+     * @notice Sender supplies assets into the market and receives apeTokens in exchange
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param minter the minter
      * @param mintAmount The amount of the underlying asset to supply
@@ -97,44 +96,14 @@ contract CWrappedNativeDelegator is CTokenInterface, CWrappedNativeInterface, CD
     }
 
     /**
-     * @notice Sender supplies assets into the market and receives cTokens in exchange
-     * @dev Accrues interest whether or not the operation succeeds, unless reverted
-     * @param minter the minter
-     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-     */
-    function mintNative(address minter) external payable returns (uint256) {
-        minter; // Shh
-        delegateAndReturn();
-    }
-
-    /**
-     * @notice Sender redeems cTokens in exchange for the underlying asset
+     * @notice Sender redeems apeTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param redeemer The redeemer
-     * @param redeemTokens The number of cTokens to redeem into underlying
-     * @param redeemAmount The amount of underlying to receive from redeeming cTokens
+     * @param redeemTokens The number of apeTokens to redeem into underlying
+     * @param redeemAmount The amount of underlying to receive from redeeming apeTokens
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeem(
-        address payable redeemer,
-        uint256 redeemTokens,
-        uint256 redeemAmount
-    ) external returns (uint256) {
-        redeemer;
-        redeemTokens;
-        redeemAmount; // Shh
-        delegateAndReturn();
-    }
-
-    /**
-     * @notice Sender redeems cTokens in exchange for the underlying asset
-     * @dev Accrues interest whether or not the operation succeeds, unless reverted
-     * @param redeemer The redeemer
-     * @param redeemTokens The number of cTokens to redeem into underlying
-     * @param redeemAmount The amount of underlying to receive from redeeming cTokens
-     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-     */
-    function redeemNative(
         address payable redeemer,
         uint256 redeemTokens,
         uint256 redeemAmount
@@ -158,18 +127,6 @@ contract CWrappedNativeDelegator is CTokenInterface, CWrappedNativeInterface, CD
     }
 
     /**
-     * @notice Sender borrows assets from the protocol to their own address
-     * @param borrower The borrower
-     * @param borrowAmount The amount of the underlying asset to borrow
-     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-     */
-    function borrowNative(address payable borrower, uint256 borrowAmount) external returns (uint256) {
-        borrower;
-        borrowAmount; // Shh
-        delegateAndReturn();
-    }
-
-    /**
      * @notice Sender repays a borrow belonging to borrower
      * @param borrower the account with the debt being payed off
      * @param repayAmount The amount to repay
@@ -182,87 +139,22 @@ contract CWrappedNativeDelegator is CTokenInterface, CWrappedNativeInterface, CD
     }
 
     /**
-     * @notice Sender repays a borrow belonging to borrower
-     * @param borrower the account with the debt being payed off
-     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-     */
-    function repayBorrowNative(address borrower) external payable returns (uint256) {
-        borrower; // Shh
-        delegateAndReturn();
-    }
-
-    /**
      * @notice The sender liquidates the borrowers collateral.
      *  The collateral seized is transferred to the liquidator.
-     * @param borrower The borrower of this cToken to be liquidated
-     * @param cTokenCollateral The market in which to seize collateral from the borrower
+     * @param borrower The borrower of this apeToken to be liquidated
+     * @param apeTokenCollateral The market in which to seize collateral from the borrower
      * @param repayAmount The amount of the underlying borrowed asset to repay
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function liquidateBorrow(
         address borrower,
         uint256 repayAmount,
-        CTokenInterface cTokenCollateral
+        ApeTokenInterface apeTokenCollateral
     ) external returns (uint256) {
         borrower;
         repayAmount;
-        cTokenCollateral; // Shh
+        apeTokenCollateral; // Shh
         delegateAndReturn();
-    }
-
-    /**
-     * @notice The sender liquidates the borrowers collateral.
-     *  The collateral seized is transferred to the liquidator.
-     * @param borrower The borrower of this cToken to be liquidated
-     * @param cTokenCollateral The market in which to seize collateral from the borrower
-     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-     */
-    function liquidateBorrowNative(address borrower, CTokenInterface cTokenCollateral)
-        external
-        payable
-        returns (uint256)
-    {
-        borrower;
-        cTokenCollateral; // Shh
-        delegateAndReturn();
-    }
-
-    /**
-     * @notice Flash loan funds to a given account.
-     * @param receiver The receiver address for the funds
-     * @param amount The amount of the funds to be loaned
-     * @param data The other data
-     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-     */
-
-    function flashLoan(
-        ERC3156FlashBorrowerInterface receiver,
-        address initiator,
-        uint256 amount,
-        bytes calldata data
-    ) external returns (bool) {
-        receiver;
-        amount;
-        data; // Shh
-        delegateAndReturn();
-    }
-
-    /**
-     * @dev CWrappedNative doesn't have the collateral cap functionality. Return the supply cap for
-     * interface consistency.
-     * @return the supply cap of this market
-     */
-    function collateralCap() external view returns (uint256) {
-        delegateToViewAndReturn();
-    }
-
-    /**
-     * @dev CWrappedNative doesn't have the collateral cap functionality. Return the total supply for
-     * interface consistency.
-     * @return the total supply of this market
-     */
-    function totalCollateralTokens() external view returns (uint256) {
-        delegateToViewAndReturn();
     }
 
     /**
@@ -307,7 +199,7 @@ contract CWrappedNativeDelegator is CTokenInterface, CWrappedNativeInterface, CD
     }
 
     /**
-     * @notice Returns the current per-block borrow interest rate for this cToken
+     * @notice Returns the current per-block borrow interest rate for this apeToken
      * @return The borrow interest rate per block, scaled by 1e18
      */
     function borrowRatePerBlock() external view returns (uint256) {
@@ -315,7 +207,7 @@ contract CWrappedNativeDelegator is CTokenInterface, CWrappedNativeInterface, CD
     }
 
     /**
-     * @notice Returns the current per-block supply interest rate for this cToken
+     * @notice Returns the current per-block supply interest rate for this apeToken
      * @return The supply interest rate per block, scaled by 1e18
      */
     function supplyRatePerBlock() external view returns (uint256) {
@@ -359,7 +251,7 @@ contract CWrappedNativeDelegator is CTokenInterface, CWrappedNativeInterface, CD
     }
 
     /**
-     * @notice Calculates the exchange rate from the underlying to the CToken
+     * @notice Calculates the exchange rate from the underlying to the ApeToken
      * @dev This function does not accrue interest before calculating the exchange rate
      * @return Calculated exchange rate scaled by 1e18
      */
@@ -368,7 +260,7 @@ contract CWrappedNativeDelegator is CTokenInterface, CWrappedNativeInterface, CD
     }
 
     /**
-     * @notice Get cash balance of this cToken in the underlying asset
+     * @notice Get cash balance of this apeToken in the underlying asset
      * @return The quantity of underlying asset owned by this contract
      */
     function getCash() external view returns (uint256) {
@@ -386,12 +278,12 @@ contract CWrappedNativeDelegator is CTokenInterface, CWrappedNativeInterface, CD
 
     /**
      * @notice Transfers collateral tokens (this market) to the liquidator.
-     * @dev Will fail unless called by another cToken during the process of liquidation.
-     *  Its absolutely critical to use msg.sender as the borrowed cToken and not a parameter.
+     * @dev Will fail unless called by another apeToken during the process of liquidation.
+     *  Its absolutely critical to use msg.sender as the borrowed apeToken and not a parameter.
      * @param liquidator The account receiving seized collateral
      * @param borrower The account having collateral seized
-     * @param seizeTokens The number of cTokens to seize
-     * @param feeTokens The number of cTokens as fee
+     * @param seizeTokens The number of apeTokens to seize
+     * @param feeTokens The number of apeTokens as fee
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function seize(
@@ -456,14 +348,6 @@ contract CWrappedNativeDelegator is CTokenInterface, CWrappedNativeInterface, CD
      */
     function _addReserves(uint256 addAmount) external returns (uint256) {
         addAmount; // Shh
-        delegateAndReturn();
-    }
-
-    /**
-     * @notice Accrues interest and adds reserves by transferring from admin
-     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-     */
-    function _addReservesNative() external payable returns (uint256) {
         delegateAndReturn();
     }
 
@@ -593,6 +477,8 @@ contract CWrappedNativeDelegator is CTokenInterface, CWrappedNativeInterface, CD
      * @dev It returns to the external caller whatever the implementation returns or forwards reverts
      */
     function() external payable {
+        require(msg.value == 0, "ApeErc20Delegator:fallback: cannot send value to fallback");
+
         // delegate all other functions to current implementation
         delegateAndReturn();
     }

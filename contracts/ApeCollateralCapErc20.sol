@@ -1,13 +1,14 @@
 pragma solidity ^0.5.16;
 
-import "./CToken.sol";
+import "./ApeToken.sol";
+import "./ERC3156FlashLenderInterface.sol";
+import "./ERC3156FlashBorrowerInterface.sol";
 
 /**
- * @title Compound's CErc20 Contract
- * @notice CTokens which wrap an EIP-20 underlying
- * @author Compound
+ * @title ApeFinance's ApeCollateralCapErc20 Contract
+ * @notice ApeTokens which wrap an EIP-20 underlying with collateral cap
  */
-contract CErc20 is CToken, CErc20Interface {
+contract ApeCollateralCapErc20 is ApeToken, ApeCollateralCapErc20Interface {
     /**
      * @notice Initialize the new money market
      * @param underlying_ The address of the underlying asset
@@ -27,19 +28,19 @@ contract CErc20 is CToken, CErc20Interface {
         string memory symbol_,
         uint8 decimals_
     ) public {
-        // CToken initialize does the bulk of the work
+        // ApeToken initialize does the bulk of the work
         super.initialize(comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
 
         // Set underlying, version and sanity check it
         underlying = underlying_;
-        version = Version.VANILLA;
+        version = Version.COLLATERALCAP;
         EIP20Interface(underlying).totalSupply();
     }
 
     /*** User Interface ***/
 
     /**
-     * @notice Sender supplies assets into the market and receives cTokens in exchange
+     * @notice Sender supplies assets into the market and receives apeTokens in exchange
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param minter the minter
      * @param mintAmount The amount of the underlying asset to supply
@@ -51,11 +52,11 @@ contract CErc20 is CToken, CErc20Interface {
     }
 
     /**
-     * @notice Sender redeems cTokens in exchange for the underlying asset
+     * @notice Sender redeems apeTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param redeemer The redeemer
-     * @param redeemTokens The number of cTokens to redeem into underlying
-     * @param redeemAmount The amount of underlying to receive from redeeming cTokens
+     * @param redeemTokens The number of apeTokens to redeem into underlying
+     * @param redeemAmount The amount of underlying to receive from redeeming apeTokens
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeem(
@@ -90,17 +91,17 @@ contract CErc20 is CToken, CErc20Interface {
     /**
      * @notice The sender liquidates the borrowers collateral.
      *  The collateral seized is transferred to the liquidator.
-     * @param borrower The borrower of this cToken to be liquidated
+     * @param borrower The borrower of this apeToken to be liquidated
      * @param repayAmount The amount of the underlying borrowed asset to repay
-     * @param cTokenCollateral The market in which to seize collateral from the borrower
+     * @param apeTokenCollateral The market in which to seize collateral from the borrower
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function liquidateBorrow(
         address borrower,
         uint256 repayAmount,
-        CTokenInterface cTokenCollateral
+        ApeTokenInterface apeTokenCollateral
     ) external returns (uint256) {
-        (uint256 err, ) = liquidateBorrowInternal(borrower, repayAmount, cTokenCollateral, false);
+        (uint256 err, ) = liquidateBorrowInternal(borrower, repayAmount, apeTokenCollateral, false);
         require(err == 0, "liquidate borrow failed");
     }
 
@@ -113,14 +114,177 @@ contract CErc20 is CToken, CErc20Interface {
         require(_addReservesInternal(addAmount, false) == 0, "add reserves failed");
     }
 
+    /**
+     * @notice Set the given collateral cap for the market.
+     * @param newCollateralCap New collateral cap for this market. A value of 0 corresponds to no cap.
+     */
+    function _setCollateralCap(uint256 newCollateralCap) external {
+        require(msg.sender == admin, "admin only");
+
+        collateralCap = newCollateralCap;
+        emit NewCollateralCap(address(this), newCollateralCap);
+    }
+
+    /**
+     * @notice Absorb excess cash into reserves.
+     */
+    function gulp() external nonReentrant {
+        uint256 cashOnChain = getCashOnChain();
+        uint256 cashPrior = getCashPrior();
+
+        uint256 excessCash = sub_(cashOnChain, cashPrior);
+        totalReserves = add_(totalReserves, excessCash);
+        internalCash = cashOnChain;
+    }
+
+    /**
+     * @dev The amount of currency available to be lent.
+     * @param token The loan currency.
+     * @return The amount of `token` that can be borrowed.
+     */
+    function maxFlashLoan(address token) external view returns (uint256) {
+        uint256 amount = 0;
+        if (
+            token == underlying &&
+            ComptrollerInterfaceExtension(address(comptroller)).flashloanAllowed(address(this), address(0), amount, "")
+        ) {
+            amount = getCashPrior();
+        }
+        return amount;
+    }
+
+    /**
+     * @notice Get the flash loan fees
+     * @param token The loan currency. Must match the address of this contract's underlying.
+     * @param amount amount of token to borrow
+     * @return The amount of `token` to be charged for the loan, on top of the returned principal.
+     */
+    function flashFee(address token, uint256 amount) external view returns (uint256) {
+        require(token == underlying, "unsupported currency");
+        require(
+            ComptrollerInterfaceExtension(address(comptroller)).flashloanAllowed(address(this), address(0), amount, ""),
+            "flashloan is paused"
+        );
+        return _flashFee(token, amount);
+    }
+
+    /**
+     * @notice Flash loan funds to a given account.
+     * @param receiver The receiver address for the funds
+     * @param token The loan currency. Must match the address of this contract's underlying.
+     * @param amount The amount of the funds to be loaned
+     * @param data The other data
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function flashLoan(
+        ERC3156FlashBorrowerInterface receiver,
+        address token,
+        uint256 amount,
+        bytes calldata data
+    ) external nonReentrant returns (bool) {
+        require(amount > 0, "invalid flashloan amount");
+        require(token == underlying, "unsupported currency");
+        accrueInterest();
+        require(
+            ComptrollerInterfaceExtension(address(comptroller)).flashloanAllowed(
+                address(this),
+                address(receiver),
+                amount,
+                data
+            ),
+            "flashloan is paused"
+        );
+        uint256 cashOnChainBefore = getCashOnChain();
+        uint256 cashBefore = getCashPrior();
+        require(cashBefore >= amount, "insufficient cash");
+
+        // 1. calculate fee, 1 bips = 1/10000
+        uint256 totalFee = _flashFee(token, amount);
+
+        // 2. transfer fund to receiver
+        doTransferOut(address(uint160(address(receiver))), amount, false);
+
+        // 3. update totalBorrows
+        totalBorrows = add_(totalBorrows, amount);
+
+        // 4. execute receiver's callback function
+        require(
+            receiver.onFlashLoan(msg.sender, underlying, amount, totalFee, data) ==
+                keccak256("ERC3156FlashBorrowerInterface.onFlashLoan"),
+            "IERC3156: Callback failed"
+        );
+
+        // 5. take amount + fee from receiver, then check balance
+        uint256 repaymentAmount = add_(amount, totalFee);
+        doTransferIn(address(receiver), repaymentAmount, false);
+
+        uint256 cashOnChainAfter = getCashOnChain();
+
+        require(cashOnChainAfter == add_(cashOnChainBefore, totalFee), "inconsistent balance");
+
+        // 6. update reserves and internal cash and totalBorrows
+        uint256 reservesFee = mul_ScalarTruncate(Exp({mantissa: reserveFactorMantissa}), totalFee);
+        totalReserves = add_(totalReserves, reservesFee);
+        internalCash = add_(cashBefore, totalFee);
+        totalBorrows = sub_(totalBorrows, amount);
+
+        emit Flashloan(address(receiver), amount, totalFee, reservesFee);
+        return true;
+    }
+
+    /**
+     * @notice Get the flash loan fees
+     * @param token The loan currency. Must match the address of this contract's underlying.
+     * @param amount amount of token to borrow
+     * @return The amount of `token` to be charged for the loan, on top of the returned principal.
+     */
+    function _flashFee(address token, uint256 amount) internal view returns (uint256) {
+        return div_(mul_(amount, flashFeeBips), 10000);
+    }
+
+    /**
+     * @notice Register account collateral tokens if there is space.
+     * @param account The account to register
+     * @dev This function could only be called by comptroller.
+     * @return The actual registered amount of collateral
+     */
+    function registerCollateral(address account) external returns (uint256) {
+        require(msg.sender == address(comptroller), "comptroller only");
+
+        uint256 amount = sub_(accountTokens[account], accountCollateralTokens[account]);
+        return increaseUserCollateralInternal(account, amount);
+    }
+
+    /**
+     * @notice Unregister account collateral tokens if the account still has enough collateral.
+     * @dev This function could only be called by comptroller.
+     * @param account The account to unregister
+     */
+    function unregisterCollateral(address account) external {
+        require(msg.sender == address(comptroller), "comptroller only");
+        require(comptroller.redeemAllowed(address(this), account, accountCollateralTokens[account]) == 0, "rejected");
+
+        decreaseUserCollateralInternal(account, accountCollateralTokens[account]);
+    }
+
     /*** Safe Token ***/
 
     /**
-     * @notice Gets balance of this contract in terms of the underlying
+     * @notice Gets internal balance of this contract in terms of the underlying.
+     *  It excludes balance from direct transfer.
      * @dev This excludes the value of the current message, if any
      * @return The quantity of underlying tokens owned by this contract
      */
     function getCashPrior() internal view returns (uint256) {
+        return internalCash;
+    }
+
+    /**
+     * @notice Gets total balance of this contract in terms of the underlying
+     * @dev This excludes the value of the current message, if any
+     * @return The quantity of underlying tokens owned by this contract
+     */
+    function getCashOnChain() internal view returns (uint256) {
         EIP20Interface token = EIP20Interface(underlying);
         return token.balanceOf(address(this));
     }
@@ -166,7 +330,9 @@ contract CErc20 is CToken, CErc20Interface {
 
         // Calculate the amount that was *actually* transferred
         uint256 balanceAfter = EIP20Interface(underlying).balanceOf(address(this));
-        return sub_(balanceAfter, balanceBefore);
+        uint256 transferredIn = sub_(balanceAfter, balanceBefore);
+        internalCash = add_(internalCash, transferredIn);
+        return transferredIn;
     }
 
     /**
@@ -206,14 +372,65 @@ contract CErc20 is CToken, CErc20Interface {
             }
         }
         require(success, "transfer failed");
+        internalCash = sub_(internalCash, amount);
     }
 
     /**
-     * @notice Get the account's cToken balances
+     * @notice Get the account's apeToken collateral balances
      * @param account The address of the account
      */
-    function getCTokenBalanceInternal(address account) internal view returns (uint256) {
-        return accountTokens[account];
+    function getApeTokenBalanceInternal(address account) internal view returns (uint256) {
+        return accountCollateralTokens[account];
+    }
+
+    /**
+     * @notice Increase user's collateral. Increase as much as we can.
+     * @param account The address of the account
+     * @param amount The amount of collateral user wants to increase
+     * @return The actual increased amount of collateral
+     */
+    function increaseUserCollateralInternal(address account, uint256 amount) internal returns (uint256) {
+        uint256 totalCollateralTokensNew = add_(totalCollateralTokens, amount);
+        if (collateralCap == 0 || (collateralCap != 0 && totalCollateralTokensNew <= collateralCap)) {
+            // 1. If collateral cap is not set,
+            // 2. If collateral cap is set but has enough space for this user,
+            // give all the user needs.
+            totalCollateralTokens = totalCollateralTokensNew;
+            accountCollateralTokens[account] = add_(accountCollateralTokens[account], amount);
+
+            emit UserCollateralChanged(account, accountCollateralTokens[account]);
+            return amount;
+        } else if (collateralCap > totalCollateralTokens) {
+            // If the collateral cap is set but the remaining cap is not enough for this user,
+            // give the remaining parts to the user.
+            uint256 gap = sub_(collateralCap, totalCollateralTokens);
+            totalCollateralTokens = add_(totalCollateralTokens, gap);
+            accountCollateralTokens[account] = add_(accountCollateralTokens[account], gap);
+
+            emit UserCollateralChanged(account, accountCollateralTokens[account]);
+            return gap;
+        }
+        return 0;
+    }
+
+    /**
+     * @notice Decrease user's collateral. Reject if the amount can't be fully decrease.
+     * @param account The address of the account
+     * @param amount The amount of collateral user wants to decrease
+     */
+    function decreaseUserCollateralInternal(address account, uint256 amount) internal {
+        /*
+         * Return if amount is zero.
+         * Put behind `redeemAllowed` for accuring potential COMP rewards.
+         */
+        if (amount == 0) {
+            return;
+        }
+
+        totalCollateralTokens = sub_(totalCollateralTokens, amount);
+        accountCollateralTokens[account] = sub_(accountCollateralTokens[account], amount);
+
+        emit UserCollateralChanged(account, accountCollateralTokens[account]);
     }
 
     struct MintLocalVars {
@@ -223,7 +440,7 @@ contract CErc20 is CToken, CErc20Interface {
     }
 
     /**
-     * @notice User supplies assets into the market and receives cTokens in exchange
+     * @notice User supplies assets into the market and receives apeTokens in exchange
      * @dev Assumes interest has already been accrued up to the current block
      * @param payer the account paying for the mint
      * @param minter The address of the account which is supplying the assets
@@ -261,27 +478,34 @@ contract CErc20 is CToken, CErc20Interface {
 
         /*
          *  We call `doTransferIn` for the payer and the mintAmount.
-         *  Note: The cToken must handle variations between ERC-20 and ETH underlying.
+         *  Note: The apeToken must handle variations between ERC-20 and ETH underlying.
          *  `doTransferIn` reverts if anything goes wrong, since we can't be sure if
          *  side-effects occurred. The function returns the amount actually transferred,
-         *  in case of a fee. On success, the cToken holds an additional `actualMintAmount`
+         *  in case of a fee. On success, the apeToken holds an additional `actualMintAmount`
          *  of cash.
          */
         vars.actualMintAmount = doTransferIn(payer, mintAmount, isNative);
 
         /*
-         * We get the current exchange rate and calculate the number of cTokens to be minted:
+         * We get the current exchange rate and calculate the number of apeTokens to be minted:
          *  mintTokens = actualMintAmount / exchangeRate
          */
         vars.mintTokens = div_ScalarByExpTruncate(vars.actualMintAmount, Exp({mantissa: vars.exchangeRateMantissa}));
 
         /*
-         * We calculate the new total supply of cTokens and minter token balance, checking for overflow:
+         * We calculate the new total supply of apeTokens and minter token balance, checking for overflow:
          *  totalSupply = totalSupply + mintTokens
          *  accountTokens[minter] = accountTokens[minter] + mintTokens
          */
         totalSupply = add_(totalSupply, vars.mintTokens);
         accountTokens[minter] = add_(accountTokens[minter], vars.mintTokens);
+
+        /*
+         * We only allocate collateral tokens if the minter has entered the market.
+         */
+        if (ComptrollerInterfaceExtension(address(comptroller)).checkMembership(minter, ApeToken(this))) {
+            increaseUserCollateralInternal(minter, vars.mintTokens);
+        }
 
         /* We emit a Mint event */
         emit Mint(payer, minter, vars.actualMintAmount, vars.mintTokens);
@@ -296,16 +520,14 @@ contract CErc20 is CToken, CErc20Interface {
         uint256 exchangeRateMantissa;
         uint256 redeemTokens;
         uint256 redeemAmount;
-        uint256 totalSupplyNew;
-        uint256 accountTokensNew;
     }
 
     /**
-     * @notice User redeems cTokens in exchange for the underlying asset
+     * @notice User redeems apeTokens in exchange for the underlying asset
      * @dev Assumes interest has already been accrued up to the current block. Only one of redeemTokensIn or redeemAmountIn may be non-zero and it would do nothing if both are zero.
      * @param redeemer The address of the account which is redeeming the tokens
-     * @param redeemTokensIn The number of cTokens to redeem into underlying
-     * @param redeemAmountIn The number of underlying tokens to receive from redeeming cTokens
+     * @param redeemTokensIn The number of apeTokens to redeem into underlying
+     * @param redeemAmountIn The number of underlying tokens to receive from redeeming apeTokens
      * @param isNative The amount is in native or not
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
@@ -341,27 +563,23 @@ contract CErc20 is CToken, CErc20Interface {
             vars.redeemAmount = redeemAmountIn;
         }
 
-        /* Fail if redeem not allowed */
-        require(comptroller.redeemAllowed(address(this), redeemer, vars.redeemTokens) == 0, "rejected");
-
-        /*
-         * Return if redeemTokensIn and redeemAmountIn are zero.
-         * Put behind `redeemAllowed` for accuring potential COMP rewards.
+        /**
+         * For every user, accountTokens must be greater than or equal to accountCollateralTokens.
+         * The buffer between the two values will be redeemed first.
+         * bufferTokens = accountTokens[redeemer] - accountCollateralTokens[redeemer]
+         * collateralTokens = redeemTokens - bufferTokens
          */
-        if (redeemTokensIn == 0 && redeemAmountIn == 0) {
-            return uint256(Error.NO_ERROR);
+        uint256 bufferTokens = sub_(accountTokens[redeemer], accountCollateralTokens[redeemer]);
+        uint256 collateralTokens = 0;
+        if (vars.redeemTokens > bufferTokens) {
+            collateralTokens = vars.redeemTokens - bufferTokens;
         }
+
+        /* redeemAllowed might check more than user's liquidity. */
+        require(comptroller.redeemAllowed(address(this), redeemer, collateralTokens) == 0, "rejected");
 
         /* Verify market's block number equals current block number */
         require(accrualBlockNumber == getBlockNumber(), "market is stale");
-
-        /*
-         * We calculate the new total supply and redeemer balance, checking for underflow:
-         *  totalSupplyNew = totalSupply - redeemTokens
-         *  accountTokensNew = accountTokens[redeemer] - redeemTokens
-         */
-        vars.totalSupplyNew = sub_(totalSupply, vars.redeemTokens);
-        vars.accountTokensNew = sub_(accountTokens[redeemer], vars.redeemTokens);
 
         /* Reverts if protocol has insufficient cash */
         require(getCashPrior() >= vars.redeemAmount, "insufficient cash");
@@ -370,14 +588,23 @@ contract CErc20 is CToken, CErc20Interface {
         // EFFECTS & INTERACTIONS
         // (No safe failures beyond this point)
 
-        /* We write previously calculated values into storage */
-        totalSupply = vars.totalSupplyNew;
-        accountTokens[redeemer] = vars.accountTokensNew;
+        /*
+         * We calculate the new total supply and redeemer balance, checking for underflow:
+         *  totalSupplyNew = totalSupply - redeemTokens
+         *  accountTokensNew = accountTokens[redeemer] - redeemTokens
+         */
+        totalSupply = sub_(totalSupply, vars.redeemTokens);
+        accountTokens[redeemer] = sub_(accountTokens[redeemer], vars.redeemTokens);
+
+        /*
+         * We only deallocate collateral tokens if the redeemer needs to redeem them.
+         */
+        decreaseUserCollateralInternal(redeemer, collateralTokens);
 
         /*
          * We invoke doTransferOut for the redeemer and the redeemAmount.
-         *  Note: The cToken must handle variations between ERC-20 and ETH underlying.
-         *  On success, the cToken has redeemAmount less of cash.
+         *  Note: The apeToken must handle variations between ERC-20 and ETH underlying.
+         *  On success, the apeToken has redeemAmount less of cash.
          *  doTransferOut reverts if anything goes wrong, since we can't be sure if side effects occurred.
          */
         doTransferOut(redeemer, vars.redeemAmount, isNative);
@@ -393,13 +620,13 @@ contract CErc20 is CToken, CErc20Interface {
 
     /**
      * @notice Transfers collateral tokens (this market) to the liquidator.
-     * @dev Called only during an in-kind liquidation, or by liquidateBorrow during the liquidation of another CToken.
-     *  Its absolutely critical to use msg.sender as the seizer cToken and not a parameter.
-     * @param seizerToken The contract seizing the collateral (i.e. borrowed cToken)
+     * @dev Called only during an in-kind liquidation, or by liquidateBorrow during the liquidation of another ApeToken.
+     *  Its absolutely critical to use msg.sender as the seizer apeToken and not a parameter.
+     * @param seizerToken The contract seizing the collateral (i.e. borrowed apeToken)
      * @param liquidator The account receiving seized collateral
      * @param borrower The account having collateral seized
-     * @param seizeTokens The number of cTokens to seize
-     * @param feeTokens The number of cTokens as fee
+     * @param seizeTokens The number of apeTokens to seize
+     * @param feeTokens The number of apeTokens as fee
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function seizeInternal(
@@ -430,14 +657,24 @@ contract CErc20 is CToken, CErc20Interface {
         uint256 bonusTokens = sub_(seizeTokens, feeTokens);
 
         /*
-         * We calculate the new borrower and liquidator token balances, failing on underflow/overflow:
-         *  borrowerTokensNew = accountTokens[borrower] - seizeTokens
-         *  liquidatorTokensNew = accountTokens[liquidator] + bonusTokens
-         *  adminTokensNew = accountTokens[admin] + feeTokens
+         * We calculate the new borrower and liquidator token balances and token collateral balances, failing on underflow/overflow:
+         *  accountTokens[borrower] = accountTokens[borrower] - seizeTokens
+         *  accountTokens[liquidator] = accountTokens[liquidator] + bonusTokens
+         *  accountTokens[admin] = accountTokens[admin] + feeTokens
+         *  accountCollateralTokens[borrower] = accountCollateralTokens[borrower] - seizeTokens
+         *  accountCollateralTokens[liquidator] = accountCollateralTokens[liquidator] + bonusTokens
+         *  accountCollateralTokens[admin] = accountCollateralTokens[admin] + feeTokens
          */
         accountTokens[borrower] = sub_(accountTokens[borrower], seizeTokens);
         accountTokens[liquidator] = add_(accountTokens[liquidator], bonusTokens);
         accountTokens[admin] = add_(accountTokens[admin], feeTokens);
+        accountCollateralTokens[borrower] = sub_(accountCollateralTokens[borrower], seizeTokens);
+        accountCollateralTokens[liquidator] = add_(accountCollateralTokens[liquidator], bonusTokens);
+        accountCollateralTokens[admin] = add_(accountCollateralTokens[admin], feeTokens);
+
+        /* Emit UserCollateralChanged events */
+        emit UserCollateralChanged(borrower, accountCollateralTokens[borrower]);
+        emit UserCollateralChanged(liquidator, accountCollateralTokens[liquidator]);
 
         /* We call the defense hook */
         comptroller.seizeVerify(address(this), seizerToken, liquidator, borrower, seizeTokens);

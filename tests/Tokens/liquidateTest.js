@@ -137,7 +137,7 @@ describe('CToken', function () {
         liquidator: liquidator,
         borrower: borrower,
         repayAmount: repayAmount.toString(),
-        cTokenCollateral: cTokenCollateral._address,
+        apeTokenCollateral: cTokenCollateral._address,
         seizeTokens: seizeTokens.toString()
       });
       // TODO: somehow Transfer event not parsed

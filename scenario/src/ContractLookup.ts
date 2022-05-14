@@ -84,11 +84,11 @@ export async function getComptrollerImpl(world: World, comptrollerImplArg: Event
 }
 
 export function getCTokenAddress(world: World, cTokenArg: string): string {
-  return getContractDataString(world, [['cTokens', cTokenArg, 'address']]);
+  return getContractDataString(world, [['apeTokens', cTokenArg, 'address']]);
 }
 
 export function getCTokenDelegateAddress(world: World, cTokenDelegateArg: string): string {
-  return getContractDataString(world, [['CTokenDelegate', cTokenDelegateArg, 'address']]);
+  return getContractDataString(world, [['ApeTokenDelegate', cTokenDelegateArg, 'address']]);
 }
 
 export function getErc20Address(world: World, erc20Arg: string): string {
@@ -152,7 +152,7 @@ export async function getCTokenData(
   cTokenArg: string
 ): Promise<[CToken, string, Map<string, string>]> {
   let contract = getWorldContract<CToken>(world, [['cTokens', cTokenArg, 'address']]);
-  let data = getContractData(world, [['CTokens', cTokenArg]]);
+  let data = getContractData(world, [['ApeTokens', cTokenArg]]);
 
   return [contract, cTokenArg, <Map<string, string>>(<any>data)];
 }
@@ -161,8 +161,8 @@ export async function getCTokenDelegateData(
   world: World,
   cTokenDelegateArg: string
 ): Promise<[CErc20Delegate, string, Map<string, string>]> {
-  let contract = getWorldContract<CErc20Delegate>(world, [['CTokenDelegate', cTokenDelegateArg, 'address']]);
-  let data = getContractData(world, [['CTokenDelegate', cTokenDelegateArg]]);
+  let contract = getWorldContract<CErc20Delegate>(world, [['ApeTokenDelegate', cTokenDelegateArg, 'address']]);
+  let data = getContractData(world, [['ApeTokenDelegate', cTokenDelegateArg]]);
 
   return [contract, cTokenDelegateArg, <Map<string, string>>(<any>data)];
 }
@@ -200,8 +200,8 @@ export function getAddress(world: World, addressArg: string): string {
 
   return getContractDataString(world, [
     ['Contracts', addressArg],
-    ['cTokens', addressArg, 'address'],
-    ['CTokenDelegate', addressArg, 'address'],
+    ['apeTokens', addressArg, 'address'],
+    ['ApeTokenDelegate', addressArg, 'address'],
     ['Tokens', addressArg, 'address'],
     ['Comptroller', addressArg, 'address']
   ]);

@@ -1,13 +1,12 @@
 pragma solidity ^0.5.16;
 
-import "./CWrappedNative.sol";
+import "./ApeWrappedNative.sol";
 
 /**
- * @title Cream's CWrappedNativeDelegate Contract
- * @notice CTokens which wrap an EIP-20 underlying and are delegated to
- * @author Cream
+ * @title ApeFinance's ApeWrappedNativeDelegate Contract
+ * @notice ApeTokens which wrap an EIP-20 underlying and are delegated to
  */
-contract CWrappedNativeDelegate is CWrappedNative {
+contract ApeWrappedNativeDelegate is ApeWrappedNative {
     /**
      * @notice Construct an empty delegate
      */

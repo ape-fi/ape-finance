@@ -760,7 +760,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
   ),
 
   buildContractEvent<Counter>("Counter", false),
-  buildContractEvent<CompoundLens>("CompoundLens", false),
+  buildContractEvent<CompoundLens>("Lens", false),
 
   new View<{ event: EventV }>(
     `

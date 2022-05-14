@@ -390,7 +390,7 @@ async function becomeImplementation(
   becomeImplementationData: string
 ): Promise<World> {
 
-  const cErc20Delegate = getContract('CErc20Delegate');
+  const cErc20Delegate = getContract('ApeErc20Delegate');
   const cErc20DelegateContract = await cErc20Delegate.at<CErc20Delegate>(world, cToken._address);
 
   let invokation = await invoke(

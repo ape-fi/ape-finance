@@ -1,6 +1,6 @@
 pragma solidity ^0.5.16;
 
-import "./CToken.sol";
+import "./ApeToken.sol";
 import "./ComptrollerStorage.sol";
 
 contract ComptrollerInterface {
@@ -9,21 +9,21 @@ contract ComptrollerInterface {
 
     /*** Assets You Are In ***/
 
-    function enterMarkets(address[] calldata cTokens) external;
+    function enterMarkets(address[] calldata apeTokens) external;
 
-    function exitMarket(address cToken) external;
+    function exitMarket(address apeToken) external;
 
     /*** Policy Hooks ***/
 
     function mintAllowed(
         address payer,
-        address cToken,
+        address apeToken,
         address minter,
         uint256 mintAmount
     ) external returns (uint256);
 
     function mintVerify(
-        address cToken,
+        address apeToken,
         address payer,
         address minter,
         uint256 mintAmount,
@@ -31,39 +31,39 @@ contract ComptrollerInterface {
     ) external;
 
     function redeemAllowed(
-        address cToken,
+        address apeToken,
         address redeemer,
         uint256 redeemTokens
     ) external returns (uint256);
 
     function redeemVerify(
-        address cToken,
+        address apeToken,
         address redeemer,
         uint256 redeemAmount,
         uint256 redeemTokens
     ) external;
 
     function borrowAllowed(
-        address cToken,
+        address apeToken,
         address borrower,
         uint256 borrowAmount
     ) external returns (uint256);
 
     function borrowVerify(
-        address cToken,
+        address apeToken,
         address borrower,
         uint256 borrowAmount
     ) external;
 
     function repayBorrowAllowed(
-        address cToken,
+        address apeToken,
         address payer,
         address borrower,
         uint256 repayAmount
     ) external returns (uint256);
 
     function repayBorrowVerify(
-        address cToken,
+        address apeToken,
         address payer,
         address borrower,
         uint256 repayAmount,
@@ -71,16 +71,16 @@ contract ComptrollerInterface {
     ) external;
 
     function liquidateBorrowAllowed(
-        address cTokenBorrowed,
-        address cTokenCollateral,
+        address apeTokenBorrowed,
+        address apeTokenCollateral,
         address liquidator,
         address borrower,
         uint256 repayAmount
     ) external returns (uint256);
 
     function liquidateBorrowVerify(
-        address cTokenBorrowed,
-        address cTokenCollateral,
+        address apeTokenBorrowed,
+        address apeTokenCollateral,
         address liquidator,
         address borrower,
         uint256 repayAmount,
@@ -88,16 +88,16 @@ contract ComptrollerInterface {
     ) external;
 
     function seizeAllowed(
-        address cTokenCollateral,
-        address cTokenBorrowed,
+        address apeTokenCollateral,
+        address apeTokenBorrowed,
         address liquidator,
         address borrower,
         uint256 seizeTokens
     ) external returns (uint256);
 
     function seizeVerify(
-        address cTokenCollateral,
-        address cTokenBorrowed,
+        address apeTokenCollateral,
+        address apeTokenBorrowed,
         address liquidator,
         address borrower,
         uint256 seizeTokens
@@ -106,17 +106,17 @@ contract ComptrollerInterface {
     /*** Liquidity/Liquidation Calculations ***/
 
     function liquidateCalculateSeizeTokens(
-        address cTokenBorrowed,
-        address cTokenCollateral,
+        address apeTokenBorrowed,
+        address apeTokenCollateral,
         uint256 repayAmount
     ) external view returns (uint256, uint256);
 }
 
 interface ComptrollerInterfaceExtension {
-    function checkMembership(address account, CToken cToken) external view returns (bool);
+    function checkMembership(address account, ApeToken apeToken) external view returns (bool);
 
     function flashloanAllowed(
-        address cToken,
+        address apeToken,
         address receiver,
         uint256 amount,
         bytes calldata params

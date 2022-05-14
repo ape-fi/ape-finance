@@ -1,12 +1,12 @@
 pragma solidity ^0.5.16;
 
-import "../../../contracts/CErc20Delegate.sol";
+import "../../../contracts/ApeErc20Delegate.sol";
 import "../../../contracts/EIP20Interface.sol";
 
-import "./CTokenCollateral.sol";
+import "./ApeTokenCollateral.sol";
 
-contract CErc20DelegateCertora is CErc20Delegate {
-    CTokenCollateral public otherToken;
+contract ApeErc20DelegateCertora is ApeErc20Delegate {
+    ApeTokenCollateral public otherToken;
 
     function mintFreshPub(address minter, uint256 mintAmount) public returns (uint256) {
         (uint256 error, ) = mintFresh(minter, mintAmount, false);
