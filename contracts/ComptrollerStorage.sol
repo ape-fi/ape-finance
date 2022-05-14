@@ -1,6 +1,6 @@
 pragma solidity ^0.5.16;
 
-import "./CToken.sol";
+import "./ApeToken.sol";
 import "./PriceOracle/PriceOracle.sol";
 
 contract UnitrollerAdminStorage {
@@ -44,7 +44,7 @@ contract ComptrollerV1Storage is UnitrollerAdminStorage {
     /**
      * @notice Per-account mapping of "assets you are in"
      */
-    mapping(address => CToken[]) public accountAssets;
+    mapping(address => ApeToken[]) public accountAssets;
 
     struct Market {
         /// @notice Whether or not this market is listed
@@ -60,7 +60,7 @@ contract ComptrollerV1Storage is UnitrollerAdminStorage {
     }
 
     /**
-     * @notice Official mapping of cTokens -> Market metadata
+     * @notice Official mapping of apeTokens -> Market metadata
      * @dev Used e.g. to determine if a market is supported
      */
     mapping(address => Market) public markets;
@@ -78,18 +78,18 @@ contract ComptrollerV1Storage is UnitrollerAdminStorage {
     mapping(address => bool) public borrowGuardianPaused;
 
     /// @notice A list of all markets
-    CToken[] public allMarkets;
+    ApeToken[] public allMarkets;
 
     /// @notice The borrowCapGuardian can set borrowCaps to any number for any market. Lowering the borrow cap could disable borrowing on the given market.
     address public borrowCapGuardian;
 
-    /// @notice Borrow caps enforced by borrowAllowed for each cToken address. Defaults to zero which corresponds to unlimited borrowing.
+    /// @notice Borrow caps enforced by borrowAllowed for each apeToken address. Defaults to zero which corresponds to unlimited borrowing.
     mapping(address => uint256) public borrowCaps;
 
     /// @notice The supplyCapGuardian can set supplyCaps to any number for any market. Lowering the supply cap could disable supplying to the given market.
     address public supplyCapGuardian;
 
-    /// @notice Supply caps enforced by mintAllowed for each cToken address. Defaults to zero which corresponds to unlimited supplying.
+    /// @notice Supply caps enforced by mintAllowed for each apeToken address. Defaults to zero which corresponds to unlimited supplying.
     mapping(address => uint256) public supplyCaps;
 
     /// @notice flashloanGuardianPaused can pause flash loan as a safety mechanism.

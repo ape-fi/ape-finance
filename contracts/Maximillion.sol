@@ -1,47 +1,46 @@
 pragma solidity ^0.5.16;
 
-import "./CWrappedNative.sol";
+import "./ApeWrappedNative.sol";
 
 /**
- * @title Compound's Maximillion Contract
- * @author Compound
+ * @title ApeFinance's Maximillion Contract
  */
 contract Maximillion {
     /**
-     * @notice The CWrappedNative market to repay in
+     * @notice The ApeWrappedNative market to repay in
      */
-    CWrappedNative public cWrappedNative;
+    ApeWrappedNative public apeWrappedNative;
 
     /**
-     * @notice Construct a Maximillion to repay max in a CWrappedNative market
+     * @notice Construct a Maximillion to repay max in a ApeWrappedNative market
      */
-    constructor(CWrappedNative cWrappedNative_) public {
-        cWrappedNative = cWrappedNative_;
+    constructor(ApeWrappedNative apeWrappedNative_) public {
+        apeWrappedNative = apeWrappedNative_;
     }
 
     /**
-     * @notice msg.sender sends Ether to repay an account's borrow in the cWrappedNative market
+     * @notice msg.sender sends Ether to repay an account's borrow in the apeWrappedNative market
      * @dev The provided Ether is applied towards the borrow balance, any excess is refunded
      * @param borrower The address of the borrower account to repay on behalf of
      */
     function repayBehalf(address borrower) public payable {
-        repayBehalfExplicit(borrower, cWrappedNative);
+        repayBehalfExplicit(borrower, apeWrappedNative);
     }
 
     /**
-     * @notice msg.sender sends Ether to repay an account's borrow in a cWrappedNative market
+     * @notice msg.sender sends Ether to repay an account's borrow in a apeWrappedNative market
      * @dev The provided Ether is applied towards the borrow balance, any excess is refunded
      * @param borrower The address of the borrower account to repay on behalf of
-     * @param cWrappedNative_ The address of the cWrappedNative contract to repay in
+     * @param apeWrappedNative_ The address of the apeWrappedNative contract to repay in
      */
-    function repayBehalfExplicit(address borrower, CWrappedNative cWrappedNative_) public payable {
+    function repayBehalfExplicit(address borrower, ApeWrappedNative apeWrappedNative_) public payable {
         uint256 received = msg.value;
-        uint256 borrows = cWrappedNative_.borrowBalanceCurrent(borrower);
+        uint256 borrows = apeWrappedNative_.borrowBalanceCurrent(borrower);
         if (received > borrows) {
-            cWrappedNative_.repayBorrowNative.value(borrows)(borrower);
+            apeWrappedNative_.repayBorrowNative.value(borrows)(borrower);
             msg.sender.transfer(received - borrows);
         } else {
-            cWrappedNative_.repayBorrowNative.value(received)(borrower);
+            apeWrappedNative_.repayBorrowNative.value(received)(borrower);
         }
     }
 }

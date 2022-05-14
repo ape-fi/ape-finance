@@ -1,9 +1,9 @@
 pragma solidity ^0.5.16;
 
-import "../../contracts/Legacy/CEther.sol";
+import "../../contracts/Legacy/ApeEther.sol";
 import "./ComptrollerScenario.sol";
 
-contract CEtherHarness is CEther {
+contract ApeEtherHarness is ApeEther {
     uint256 harnessExchangeRate;
     uint256 public blockNumber = 100000;
 
@@ -17,7 +17,10 @@ contract CEtherHarness is CEther {
         string memory symbol_,
         uint8 decimals_,
         address payable admin_
-    ) public CEther(comptroller_, interestRateModel_, initialExchangeRateMantissa, name_, symbol_, decimals_, admin_) {}
+    )
+        public
+        ApeEther(comptroller_, interestRateModel_, initialExchangeRateMantissa, name_, symbol_, decimals_, admin_)
+    {}
 
     function doTransferOut(address payable to, uint256 amount) internal {
         require(failTransferToAddresses[to] == false, "TOKEN_TRANSFER_OUT_FAILED");
@@ -88,10 +91,10 @@ contract CEtherHarness is CEther {
 
     function harnessRedeemFresh(
         address payable account,
-        uint256 cTokenAmount,
+        uint256 apeTokenAmount,
         uint256 underlyingAmount
     ) public returns (uint256) {
-        return super.redeemFresh(account, cTokenAmount, underlyingAmount);
+        return super.redeemFresh(account, apeTokenAmount, underlyingAmount);
     }
 
     function harnessAccountBorrows(address account) public view returns (uint256 principal, uint256 interestIndex) {
@@ -128,9 +131,9 @@ contract CEtherHarness is CEther {
         address liquidator,
         address borrower,
         uint256 repayAmount,
-        CToken cTokenCollateral
+        ApeToken apeTokenCollateral
     ) public returns (uint256) {
-        (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, cTokenCollateral);
+        (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, apeTokenCollateral);
         return err;
     }
 
@@ -171,7 +174,7 @@ contract CEtherHarness is CEther {
     }
 }
 
-contract CEtherScenario is CEther {
+contract ApeEtherScenario is ApeEther {
     uint256 reserveFactor;
 
     constructor(
@@ -182,7 +185,10 @@ contract CEtherScenario is CEther {
         ComptrollerInterface comptroller_,
         InterestRateModel interestRateModel_,
         uint256 initialExchangeRateMantissa
-    ) public CEther(comptroller_, interestRateModel_, initialExchangeRateMantissa, name_, symbol_, decimals_, admin_) {}
+    )
+        public
+        ApeEther(comptroller_, interestRateModel_, initialExchangeRateMantissa, name_, symbol_, decimals_, admin_)
+    {}
 
     function setTotalBorrows(uint256 totalBorrows_) public {
         totalBorrows = totalBorrows_;

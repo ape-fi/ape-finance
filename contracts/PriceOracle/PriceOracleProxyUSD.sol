@@ -5,8 +5,8 @@ import "./Denominations.sol";
 import "./PriceOracle.sol";
 import "./interfaces/BandReference.sol";
 import "./interfaces/FeedRegistryInterface.sol";
-import "../CErc20.sol";
-import "../CToken.sol";
+import "../ApeErc20.sol";
+import "../ApeToken.sol";
 import "../Exponential.sol";
 import "../EIP20Interface.sol";
 
@@ -70,12 +70,12 @@ contract PriceOracleProxyUSD is PriceOracle, Exponential, Denominations {
     }
 
     /**
-     * @notice Get the underlying price of a listed cToken asset
-     * @param cToken The cToken to get the underlying price of
+     * @notice Get the underlying price of a listed apeToken asset
+     * @param apeToken The apeToken to get the underlying price of
      * @return The underlying asset price mantissa (scaled by 1e18)
      */
-    function getUnderlyingPrice(CToken cToken) public view returns (uint256) {
-        address underlying = CErc20(address(cToken)).underlying();
+    function getUnderlyingPrice(ApeToken apeToken) public view returns (uint256) {
+        address underlying = ApeErc20(address(apeToken)).underlying();
 
         if (underlying == apeUSD) {
             // apeUSD always worth 1

@@ -1,13 +1,12 @@
 pragma solidity ^0.5.16;
 
-import "./CCollateralCapErc20.sol";
+import "./ApeErc20.sol";
 
 /**
- * @title Cream's CCollateralCapErc20Delegate Contract
- * @notice CTokens which wrap an EIP-20 underlying and are delegated to
- * @author Cream
+ * @title ApeFinance's ApeErc20Delegate Contract
+ * @notice ApeTokens which wrap an EIP-20 underlying and are delegated to
  */
-contract CCollateralCapErc20Delegate is CCollateralCapErc20 {
+contract ApeErc20Delegate is ApeErc20, CDelegateInterface {
     /**
      * @notice Construct an empty delegate
      */
@@ -27,10 +26,7 @@ contract CCollateralCapErc20Delegate is CCollateralCapErc20 {
         }
 
         require(msg.sender == admin, "admin only");
-        require(version == Version.COLLATERALCAP, "mismatch version");
-
-        // Set internal cash when becoming implementation
-        internalCash = getCashOnChain();
+        require(version == Version.VANILLA, "mismatch version");
     }
 
     /**

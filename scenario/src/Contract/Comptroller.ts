@@ -24,7 +24,6 @@ interface ComptrollerMethods {
   _setCloseFactor(encodedNumber): Sendable<number>
   enterMarkets(markets: string[]): Sendable<void>
   exitMarket(market: string): Sendable<void>
-  updateCTokenVersion(cToken: string, version: encodedNumber): Sendable<void>
   fastForward(encodedNumber): Sendable<number>
   _setPendingImplementation(string): Sendable<number>
   comptrollerImplementation(): Callable<string>

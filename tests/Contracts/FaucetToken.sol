@@ -3,8 +3,7 @@ pragma solidity ^0.5.16;
 import "./ERC20.sol";
 
 /**
- * @title The Compound Faucet Test Token
- * @author Compound
+ * @title The ApeFinance Faucet Test Token
  * @notice A simple test token that lets anyone get more of it.
  */
 contract FaucetToken is StandardToken {
@@ -23,8 +22,7 @@ contract FaucetToken is StandardToken {
 }
 
 /**
- * @title The Compound Faucet Test Token (non-standard)
- * @author Compound
+ * @title The ApeFinance Faucet Test Token (non-standard)
  * @notice A simple test token that lets anyone get more of it.
  */
 contract FaucetNonStandardToken is NonStandardToken {
@@ -43,8 +41,7 @@ contract FaucetNonStandardToken is NonStandardToken {
 }
 
 /**
- * @title The Compound Faucet Re-Entrant Test Token
- * @author Compound
+ * @title The ApeFinance Faucet Re-Entrant Test Token
  * @notice A test token that is malicious and tries to re-enter callers
  */
 contract FaucetTokenReEntrantHarness {

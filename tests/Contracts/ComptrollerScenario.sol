@@ -20,11 +20,11 @@ contract ComptrollerScenario is Comptroller {
         return blockNumber;
     }
 
-    function membershipLength(CToken cToken) public view returns (uint256) {
-        return accountAssets[address(cToken)].length;
+    function membershipLength(ApeToken apeToken) public view returns (uint256) {
+        return accountAssets[address(apeToken)].length;
     }
 
-    function unlist(CToken cToken) public {
-        markets[address(cToken)].isListed = false;
+    function unlist(ApeToken apeToken) public {
+        markets[address(apeToken)].isListed = false;
     }
 }

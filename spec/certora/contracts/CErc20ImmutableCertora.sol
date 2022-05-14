@@ -1,12 +1,12 @@
 pragma solidity ^0.5.16;
 
-import "../../../contracts/CErc20Immutable.sol";
+import "../../../contracts/ApeErc20Immutable.sol";
 import "../../../contracts/EIP20Interface.sol";
 
-import "./CTokenCollateral.sol";
+import "./ApeTokenCollateral.sol";
 
-contract CErc20ImmutableCertora is CErc20Immutable {
-    CTokenCollateral public otherToken;
+contract ApeErc20ImmutableCertora is ApeErc20Immutable {
+    ApeTokenCollateral public otherToken;
 
     constructor(
         address underlying_,
@@ -19,7 +19,7 @@ contract CErc20ImmutableCertora is CErc20Immutable {
         address payable admin_
     )
         public
-        CErc20Immutable(
+        ApeErc20Immutable(
             underlying_,
             comptroller_,
             interestRateModel_,

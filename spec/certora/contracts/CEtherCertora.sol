@@ -1,8 +1,8 @@
 pragma solidity ^0.5.16;
 
-import "../../../contracts/CEther.sol";
+import "../../../contracts/ApeEther.sol";
 
-contract CEtherCertora is CEther {
+contract ApeEtherCertora is ApeEther {
     constructor(
         ComptrollerInterface comptroller_,
         InterestRateModel interestRateModel_,
@@ -13,6 +13,6 @@ contract CEtherCertora is CEther {
         address payable admin_
     )
         public
-        CEther(comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_, admin_)
+        ApeEther(comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_, admin_)
     {}
 }

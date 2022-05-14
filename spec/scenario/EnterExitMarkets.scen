@@ -6,7 +6,7 @@ Test "Enter Markets Idempotent"
 	Assert Equal (Comptroller AssetsIn Geoff) []
 	ListedCToken ZRX cZRX
 	EnterMarkets Geoff cZRX
-	Assert Log MarketEntered (cToken (Address cZRX)) (account (Address Geoff))
+	Assert Log MarketEntered (apeToken (Address cZRX)) (account (Address Geoff))
 	Assert Equal (Comptroller MembershipLength Geoff) (Exactly 1)
 	Assert True (Comptroller CheckMembership Geoff cZRX)
 	ListedCToken OMG cOMG

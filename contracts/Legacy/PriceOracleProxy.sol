@@ -8,8 +8,8 @@ import "../PriceOracle/interfaces/UniswapV2Interface.sol";
 import "../PriceOracle/interfaces/V1PriceOracleInterface.sol";
 import "../PriceOracle/interfaces/XSushiExchangeRateInterface.sol";
 import "../PriceOracle/interfaces/YVaultTokenInterface.sol";
-import "../CErc20.sol";
-import "../CToken.sol";
+import "../ApeErc20.sol";
+import "../ApeToken.sol";
 import "../Exponential.sol";
 import "../EIP20Interface.sol";
 
@@ -122,22 +122,22 @@ contract PriceOracleProxy is PriceOracle, Exponential, Denominations {
     }
 
     /**
-     * @notice Get the underlying price of a listed cToken asset
-     * @param cToken The cToken to get the underlying price of
+     * @notice Get the underlying price of a listed apeToken asset
+     * @param apeToken The apeToken to get the underlying price of
      * @return The underlying asset price mantissa (scaled by 1e18)
      */
-    function getUnderlyingPrice(CToken cToken) public view returns (uint256) {
-        address cTokenAddress = address(cToken);
-        if (cTokenAddress == cEthAddress) {
+    function getUnderlyingPrice(ApeToken apeToken) public view returns (uint256) {
+        address apeTokenAddress = address(apeToken);
+        if (apeTokenAddress == cEthAddress) {
             // ether always worth 1
             return 1e18;
-        } else if (cTokenAddress == crXSushiAddress) {
+        } else if (apeTokenAddress == crXSushiAddress) {
             // Handle xSUSHI.
             uint256 exchangeRate = XSushiExchangeRateInterface(xSushiExRateAddress).getExchangeRate();
             return mul_(getTokenPrice(sushiAddress), Exp({mantissa: exchangeRate}));
         }
 
-        address underlying = CErc20(cTokenAddress).underlying();
+        address underlying = ApeErc20(apeTokenAddress).underlying();
 
         // Handle LP tokens.
         if (isUnderlyingLP[underlying]) {
@@ -320,7 +320,7 @@ contract PriceOracleProxy is PriceOracle, Exponential, Denominations {
     /**
      * @notice See assets as LP tokens for multiple tokens
      * @param tokenAddresses The list of tokens
-     * @param isLP The list of cToken properties (it's LP or not)
+     * @param isLP The list of apeToken properties (it's LP or not)
      */
     function _setLPs(address[] calldata tokenAddresses, bool[] calldata isLP) external {
         require(msg.sender == admin, "only the admin may set LPs");

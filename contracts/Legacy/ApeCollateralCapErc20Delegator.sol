@@ -1,13 +1,12 @@
 pragma solidity ^0.5.16;
 
-import "./CTokenInterfaces.sol";
+import "../ApeTokenInterfaces.sol";
 
 /**
- * @title Compound's CErc20Delegator Contract
- * @notice CTokens which wrap an EIP-20 underlying and delegate to an implementation
- * @author Compound
+ * @title ApeFinance's ApeCollateralCapErc20Delegator Contract
+ * @notice ApeTokens which wrap an EIP-20 underlying and delegate to an implementation
  */
-contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterface {
+contract ApeCollateralCapErc20Delegator is ApeTokenInterface, ApeCollateralCapErc20Interface, CDelegatorInterface {
     /**
      * @notice Construct a new money market
      * @param underlying_ The address of the underlying asset
@@ -69,7 +68,7 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
         bool allowResign,
         bytes memory becomeImplementationData
     ) public {
-        require(msg.sender == admin, "CErc20Delegator::_setImplementation: Caller must be admin");
+        require(msg.sender == admin, "ApeCollateralCapErc20Delegator::_setImplementation: Caller must be admin");
 
         if (allowResign) {
             delegateToImplementation(abi.encodeWithSignature("_resignImplementation()"));
@@ -84,7 +83,7 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
     }
 
     /**
-     * @notice Sender supplies assets into the market and receives cTokens in exchange
+     * @notice Sender supplies assets into the market and receives apeTokens in exchange
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param minter the minter
      * @param mintAmount The amount of the underlying asset to supply
@@ -97,11 +96,11 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
     }
 
     /**
-     * @notice Sender redeems cTokens in exchange for the underlying asset
+     * @notice Sender redeems apeTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param redeemer The redeemer
-     * @param redeemTokens The number of cTokens to redeem into underlying
-     * @param redeemAmount The amount of underlying to receive from redeeming cTokens
+     * @param redeemTokens The number of apeTokens to redeem into underlying
+     * @param redeemAmount The amount of underlying to receive from redeeming apeTokens
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeem(
@@ -142,19 +141,69 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
     /**
      * @notice The sender liquidates the borrowers collateral.
      *  The collateral seized is transferred to the liquidator.
-     * @param borrower The borrower of this cToken to be liquidated
-     * @param cTokenCollateral The market in which to seize collateral from the borrower
+     * @param borrower The borrower of this apeToken to be liquidated
+     * @param apeTokenCollateral The market in which to seize collateral from the borrower
      * @param repayAmount The amount of the underlying borrowed asset to repay
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function liquidateBorrow(
         address borrower,
         uint256 repayAmount,
-        CTokenInterface cTokenCollateral
+        ApeTokenInterface apeTokenCollateral
     ) external returns (uint256) {
         borrower;
         repayAmount;
-        cTokenCollateral; // Shh
+        apeTokenCollateral; // Shh
+        delegateAndReturn();
+    }
+
+    /**
+     * @notice Gulps excess contract cash to reserves
+     * @dev This function calculates excess ERC20 gained from a ERC20.transfer() call and adds the excess to reserves.
+     */
+    function gulp() external {
+        delegateAndReturn();
+    }
+
+    /**
+     * @notice Flash loan funds to a given account.
+     * @param receiver The receiver address for the funds
+     * @param initiator flash loan initiator
+     * @param amount The amount of the funds to be loaned
+     * @param data The other data
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function flashLoan(
+        ERC3156FlashBorrowerInterface receiver,
+        address initiator,
+        uint256 amount,
+        bytes calldata data
+    ) external returns (bool) {
+        receiver;
+        initiator;
+        amount;
+        data; // Shh
+        delegateAndReturn();
+    }
+
+    /**
+     * @notice Register account collateral tokens if there is space.
+     * @param account The account to register
+     * @dev This function could only be called by comptroller.
+     * @return The actual registered amount of collateral
+     */
+    function registerCollateral(address account) external returns (uint256) {
+        account; // Shh
+        delegateAndReturn();
+    }
+
+    /**
+     * @notice Unregister account collateral tokens if the account still has enough collateral.
+     * @dev This function could only be called by comptroller.
+     * @param account The account to unregister
+     */
+    function unregisterCollateral(address account) external {
+        account; // Shh
         delegateAndReturn();
     }
 
@@ -200,7 +249,7 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
     }
 
     /**
-     * @notice Returns the current per-block borrow interest rate for this cToken
+     * @notice Returns the current per-block borrow interest rate for this apeToken
      * @return The borrow interest rate per block, scaled by 1e18
      */
     function borrowRatePerBlock() external view returns (uint256) {
@@ -208,7 +257,7 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
     }
 
     /**
-     * @notice Returns the current per-block supply interest rate for this cToken
+     * @notice Returns the current per-block supply interest rate for this apeToken
      * @return The supply interest rate per block, scaled by 1e18
      */
     function supplyRatePerBlock() external view returns (uint256) {
@@ -252,7 +301,7 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
     }
 
     /**
-     * @notice Calculates the exchange rate from the underlying to the CToken
+     * @notice Calculates the exchange rate from the underlying to the ApeToken
      * @dev This function does not accrue interest before calculating the exchange rate
      * @return Calculated exchange rate scaled by 1e18
      */
@@ -261,7 +310,7 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
     }
 
     /**
-     * @notice Get cash balance of this cToken in the underlying asset
+     * @notice Get cash balance of this apeToken in the underlying asset
      * @return The quantity of underlying asset owned by this contract
      */
     function getCash() external view returns (uint256) {
@@ -279,12 +328,12 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
 
     /**
      * @notice Transfers collateral tokens (this market) to the liquidator.
-     * @dev Will fail unless called by another cToken during the process of liquidation.
-     *  Its absolutely critical to use msg.sender as the borrowed cToken and not a parameter.
+     * @dev Will fail unless called by another apeToken during the process of liquidation.
+     *  Its absolutely critical to use msg.sender as the borrowed apeToken and not a parameter.
      * @param liquidator The account receiving seized collateral
      * @param borrower The account having collateral seized
-     * @param seizeTokens The number of cTokens to seize
-     * @param feeTokens The number of cTokens as fee
+     * @param seizeTokens The number of apeTokens to seize
+     * @param feeTokens The number of apeTokens as fee
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function seize(
@@ -295,8 +344,7 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
     ) external returns (uint256) {
         liquidator;
         borrower;
-        seizeTokens;
-        feeTokens; // Shh
+        seizeTokens; // Shh
         delegateAndReturn();
     }
 
@@ -392,6 +440,15 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
     }
 
     /**
+     * @notice Set collateral cap of this market, 0 for no cap
+     * @param newCollateralCap The new collateral cap
+     */
+    function _setCollateralCap(uint256 newCollateralCap) external {
+        newCollateralCap; // Shh
+        delegateAndReturn();
+    }
+
+    /**
      * @notice Internal method to delegate execution to another contract
      * @dev It returns to the external caller whatever the implementation returns or forwards reverts
      * @param callee The contract to delegatecall
@@ -478,7 +535,7 @@ contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterfac
      * @dev It returns to the external caller whatever the implementation returns or forwards reverts
      */
     function() external payable {
-        require(msg.value == 0, "CErc20Delegator:fallback: cannot send value to fallback");
+        require(msg.value == 0, "ApeErc20Delegator:fallback: cannot send value to fallback");
 
         // delegate all other functions to current implementation
         delegateAndReturn();

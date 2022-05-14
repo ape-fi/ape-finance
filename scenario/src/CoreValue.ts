@@ -921,7 +921,7 @@ const fetchers = [
 
 let contractFetchers = [
   { contract: "Counter", implicit: false },
-  { contract: "CompoundLens", implicit: false }
+  { contract: "Lens", implicit: false }
 ];
 
 export async function getFetchers(world: World) {

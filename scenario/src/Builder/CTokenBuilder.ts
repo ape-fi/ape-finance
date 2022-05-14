@@ -9,14 +9,14 @@ import { Arg, Fetcher, getFetcherValue } from '../Command';
 import { storeAndSaveContract } from '../Networks';
 import { getContract, getTestContract } from '../Contract';
 
-const CErc20Contract = getContract('CErc20Immutable');
-const CErc20Delegator = getContract('CErc20Delegator');
-const CErc20DelegatorScenario = getTestContract('CErc20DelegatorScenario');
-const CCollateralCapErc20DelegatorScenario = getContract('CCollateralCapErc20DelegatorScenario');
-const CWrappedNativeDelegatorScenario = getContract('CWrappedNativeDelegatorScenario');
-const CEtherContract = getContract('CEther');
-const CErc20ScenarioContract = getTestContract('CErc20Scenario');
-const CEtherScenarioContract = getTestContract('CEtherScenario');
+const CErc20Contract = getContract('ApeErc20Immutable');
+const CErc20Delegator = getContract('ApeErc20Delegator');
+const CErc20DelegatorScenario = getTestContract('ApeErc20DelegatorScenario');
+const CCollateralCapErc20DelegatorScenario = getContract('ApeCollateralCapErc20DelegatorScenario');
+const CWrappedNativeDelegatorScenario = getContract('ApeWrappedNativeDelegatorScenario');
+const CEtherContract = getContract('ApeEther');
+const CErc20ScenarioContract = getTestContract('ApeErc20Scenario');
+const CEtherScenarioContract = getTestContract('ApeEtherScenario');
 const CEvilContract = getTestContract('CEvil');
 
 export interface TokenData {
@@ -103,7 +103,7 @@ export async function buildCToken(
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: underlying.val,
-          contract: 'CErc20Delegator',
+          contract: 'ApeErc20Delegator',
           initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
           admin: admin.val
         };
@@ -176,7 +176,7 @@ export async function buildCToken(
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: underlying.val,
-          contract: 'CErc20DelegatorScenario',
+          contract: 'ApeErc20DelegatorScenario',
           initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
           admin: admin.val
         };
@@ -249,7 +249,7 @@ export async function buildCToken(
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: underlying.val,
-          contract: 'CCollateralCapErc20DelegatorScenario',
+          contract: 'ApeCollateralCapErc20DelegatorScenario',
           initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
           admin: admin.val
         };
@@ -322,7 +322,7 @@ export async function buildCToken(
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: underlying.val,
-          contract: 'CWrappedNativeDelegatorScenario',
+          contract: 'ApeWrappedNativeDelegatorScenario',
           initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
           admin: admin.val
         };
@@ -353,7 +353,7 @@ export async function buildCToken(
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: underlying.val,
-          contract: 'CErc20Scenario',
+          contract: 'ApeErc20Scenario',
           initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
           admin: admin.val
         };
@@ -383,7 +383,7 @@ export async function buildCToken(
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: "",
-          contract: 'CEtherScenario',
+          contract: 'ApeEtherScenario',
           initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
           admin: admin.val
         };
@@ -413,7 +413,7 @@ export async function buildCToken(
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: "",
-          contract: 'CEther',
+          contract: 'ApeEther',
           initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
           admin: admin.val
         };
@@ -445,7 +445,7 @@ export async function buildCToken(
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: underlying.val,
-          contract: 'CErc20',
+          contract: 'ApeErc20',
           initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
           admin: admin.val
         };
@@ -509,7 +509,7 @@ export async function buildCToken(
             symbol: symbol.val,
             decimals: decimals.toNumber(),
             underlying: underlying.val,
-            contract: 'CErc20Scenario',
+            contract: 'ApeErc20Scenario',
             initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
             admin: admin.val
           };
@@ -520,7 +520,7 @@ export async function buildCToken(
             symbol: symbol.val,
             decimals: decimals.toNumber(),
             underlying: underlying.val,
-            contract: 'CErc20Immutable',
+            contract: 'ApeErc20Immutable',
             initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
             admin: admin.val
           };
@@ -547,7 +547,7 @@ export async function buildCToken(
     tokenData.symbol,
     invokation,
     [
-      { index: ['cTokens', tokenData.symbol], data: tokenData },
+      { index: ['apeTokens', tokenData.symbol], data: tokenData },
       { index: ['Tokens', tokenData.symbol], data: tokenData }
     ]
   );
