@@ -2,6 +2,7 @@ const {
   address,
   etherMantissa,
   etherUnsigned,
+  StringToBytes32
 } = require('../Utils/Ethereum');
 const {
   makeCToken,
@@ -9,6 +10,7 @@ const {
   makeComptroller,
   makeInterestRateModel,
   makeToken,
+  makeDelegation
 } = require('../Utils/Compound');
 
 describe('CTokenAdmin', () => {
@@ -292,6 +294,26 @@ describe('CTokenAdmin', () => {
       expect(await send(cTokenAdmin, '_setHelper', [cToken._address, root], {from: admin})).toSucceed();
 
       expect(await call(cToken, 'helper')).toEqual(root);
+    });
+  });
+
+  describe('_setDelegate()', () => {
+    const spaceId = StringToBytes32('apecoin.eth');
+    let delegationRegistry;
+
+    beforeEach(async () => {
+      cToken = await makeCToken({admin: cTokenAdmin._address});
+      delegationRegistry = await makeDelegation();
+    });
+
+    it('should only be callable by admin', async () => {
+      await expect(send(cTokenAdmin, '_setDelegate', [cToken._address, delegationRegistry._address, spaceId, root], {from: others})).rejects.toRevert('revert only the admin may call this function');
+    });
+
+    it('should succeed and set new delegate', async () => {
+      expect(await send(cTokenAdmin, '_setDelegate', [cToken._address, delegationRegistry._address, spaceId, root], {from: admin})).toSucceed();
+
+      expect(await call(delegationRegistry, 'delegation', [cToken._address, spaceId])).toEqual(root);
     });
   });
 
