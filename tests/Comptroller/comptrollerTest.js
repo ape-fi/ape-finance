@@ -2,7 +2,7 @@ const {
   address,
   etherMantissa,
   both,
-  UInt256Max
+  StringToBytes32
 } = require('../Utils/Ethereum');
 
 const {
@@ -10,7 +10,8 @@ const {
   makePriceOracle,
   makeCToken,
   makeToken,
-  makeLiquidityMining
+  makeLiquidityMining,
+  makeDelegation
 } = require('../Utils/Compound');
 
 describe('Comptroller', () => {
@@ -373,6 +374,26 @@ describe('Comptroller', () => {
       const result = await send(cToken, '_setHelper', [root]);
       expect(result).toHaveLog('HelperSet', {oldHelper: address(0), newHelper: root});
       expect(await call(cToken, 'helper')).toEqual(root);
+    });
+  });
+
+  describe('_setDelegate', () => {
+    const spaceId = StringToBytes32('apecoin.eth');
+    let cToken;
+    let delegationRegistry;
+
+    beforeEach(async () => {
+      cToken = await makeCToken();
+      delegationRegistry = await makeDelegation();
+    });
+
+    it("fails if not called by admin", async () => {
+      await expect(send(cToken, '_setDelegate', [delegationRegistry._address, spaceId, root], {from: accounts[0]})).rejects.toRevert("revert admin only");
+    });
+
+    it("succeeds to set delegate", async () => {
+      await send(cToken, '_setDelegate', [delegationRegistry._address, spaceId, root]);
+      expect(await call(delegationRegistry, 'delegation', [cToken._address, spaceId])).toEqual(root);
     });
   });
 });

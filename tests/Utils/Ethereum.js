@@ -3,6 +3,10 @@
 const BigNumber = require('bignumber.js');
 const ethers = require('ethers');
 
+function StringToBytes32(text) {
+  return ethers.utils.formatBytes32String(text);
+}
+
 function UInt256Max() {
   return ethers.constants.MaxUint256;
 }
@@ -155,5 +159,6 @@ module.exports = {
 
   both,
   sendFallback,
-  UInt256Max
+  UInt256Max,
+  StringToBytes32
 };

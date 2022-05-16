@@ -370,6 +370,10 @@ async function makeFlashloanReceiver(opts = {}) {
   }
 }
 
+async function makeDelegation() {
+    return await deploy('DelegateRegistry');
+}
+
 async function balanceOf(token, account) {
   return etherUnsigned(await call(token, 'balanceOf', [account]));
 }
@@ -564,6 +568,7 @@ module.exports = {
   makeEvilAccount,
   makeEvilAccount2,
   makeCTokenAdmin,
+  makeDelegation,
 
   balanceOf,
   collateralTokenBalance,
