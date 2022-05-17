@@ -94,6 +94,9 @@ Macro Allow user token
 Macro AccrueInterest token
     CToken token AccrueInterest
 
+Macro RegisterCollateral user token
+    From user (CToken token RegisterCollateral)
+
 Macro Mint user amount token
     From user (CToken token Mint amount)
 

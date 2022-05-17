@@ -53,6 +53,7 @@ export interface CTokenMethods {
   _setCollateralCap(amount: encodedNumber): Sendable<void>;
   accountCollateralTokens(account: string): Callable<number>;
   totalCollateralTokens(): Callable<number>;
+  registerCollateral(): Sendable<number>;
 }
 
 export interface CTokenScenarioMethods extends CTokenMethods {

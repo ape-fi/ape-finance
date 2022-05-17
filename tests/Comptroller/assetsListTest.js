@@ -104,12 +104,11 @@ describe('assetListTest', () => {
       await failToExitMarkets(OMG, [OMG], 'revert nonzero borrow balance');
     });
 
-    it("rejects unless redeem allowed", async () => {
+    it("doesn't let you exit if you have a supply balance", async () => {
       await enterAndCheckMarkets([OMG, BAT], [OMG, BAT]);
-      await send(BAT, 'harnessSetAccountBorrows', [customer, 1, 1]);
+      await send(BAT, 'harnessSetBalance', [customer, 1]);
 
-      // BAT has a negative balance and there's no supply, thus account should be underwater
-      await failToExitMarkets(OMG, [OMG, BAT], 'revert insufficient liquidity');
+      await failToExitMarkets(BAT, [OMG, BAT], 'revert nonzero supply balance');
     });
 
     it("accepts when you're not in the market already", async () => {
