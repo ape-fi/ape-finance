@@ -68,7 +68,7 @@ Test "Register collateral multiple times"
     Assert Equal (CToken cZRX TotalCollateralTokens) (Exactly 50e9)
     -- Remove collateral cap
     CToken cZRX SetCollateralCap 0
-    EnterMarkets Geoff cZRX
+    RegisterCollateral Geoff cZRX
     Assert Equal (Erc20 cZRX TokenBalance Geoff) (Exactly 100e9)
     Assert Equal (CToken cZRX CollateralBalance Geoff) (Exactly 100e9)
     Assert Equal (CToken cZRX TotalCollateralTokens) (Exactly 100e9)
@@ -147,34 +147,6 @@ Test "Failed to redeem for comptroller rejected"
     -- 2e9 cZRX is used as collateral
     AllowFailures
     Redeem Geoff 49e9 cZRX
-    Assert Revert "revert insufficient liquidity"
-
-Test "Unregister collateral successfully"
-    CollateralCap
-    EnterMarkets Geoff cZRX
-    Prep Geoff Some ZRX cZRX
-    Mint Geoff 50e18 cZRX
-    Assert Equal (Erc20 cZRX TokenBalance Geoff) (Exactly 50e9)
-    Assert Equal (CToken cZRX CollateralBalance Geoff) (Exactly 50e9)
-    Assert Equal (CToken cZRX TotalCollateralTokens) (Exactly 50e9)
-    ExitMarket Geoff cZRX
-    Assert Equal (Erc20 cZRX TokenBalance Geoff) (Exactly 50e9)
-    Assert Equal (CToken cZRX CollateralBalance Geoff) Zero
-    Assert Equal (CToken cZRX TotalCollateralTokens) Zero
-
-Test "Failed to unregister collateral for exit market failed"
-    CollateralCap
-    ListedCToken BAT cBAT initialExchangeRate:1e9
-    GiveCToken cBAT 10e18 BAT -- Faucet some bat to borrow
-    EnterMarkets Geoff cZRX
-    Prep Geoff Some ZRX cZRX
-    Mint Geoff 50e18 cZRX
-    Borrow Geoff 1e18 cBAT
-    Assert Equal (CToken cBAT BorrowBalance Geoff) (Exactly 1e18)
-    Assert Equal (Erc20 BAT TokenBalance Geoff) (Exactly 1e18)
-    -- 2e9 cZRX is used as collateral
-    AllowFailures
-    ExitMarket Geoff cZRX
     Assert Revert "revert insufficient liquidity"
 
 Test "Seize collateral tokens"

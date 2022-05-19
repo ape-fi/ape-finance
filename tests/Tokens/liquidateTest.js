@@ -131,7 +131,6 @@ describe('CToken', function () {
       const beforeBalances = await getBalances([cToken, cTokenCollateral], [liquidator, borrower]);
       const result = await liquidateFresh(cToken, liquidator, borrower, repayAmount, cTokenCollateral);
       const afterBalances = await getBalances([cToken, cTokenCollateral], [liquidator, borrower]);
-      console.log(result.events)
       expect(result).toSucceed();
       expect(result).toHaveLog('LiquidateBorrow', {
         liquidator: liquidator,

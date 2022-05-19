@@ -243,28 +243,12 @@ contract ApeCollateralCapErc20 is ApeToken, ApeCollateralCapErc20Interface {
     }
 
     /**
-     * @notice Register account collateral tokens if there is space.
-     * @param account The account to register
-     * @dev This function could only be called by comptroller.
+     * @notice Register user collateral tokens if there is space.
      * @return The actual registered amount of collateral
      */
-    function registerCollateral(address account) external returns (uint256) {
-        require(msg.sender == address(comptroller), "comptroller only");
-
-        uint256 amount = sub_(accountTokens[account], accountCollateralTokens[account]);
-        return increaseUserCollateralInternal(account, amount);
-    }
-
-    /**
-     * @notice Unregister account collateral tokens if the account still has enough collateral.
-     * @dev This function could only be called by comptroller.
-     * @param account The account to unregister
-     */
-    function unregisterCollateral(address account) external {
-        require(msg.sender == address(comptroller), "comptroller only");
-        require(comptroller.redeemAllowed(address(this), account, accountCollateralTokens[account]) == 0, "rejected");
-
-        decreaseUserCollateralInternal(account, accountCollateralTokens[account]);
+    function registerCollateral() external returns (uint256) {
+        uint256 amount = sub_(accountTokens[msg.sender], accountCollateralTokens[msg.sender]);
+        return increaseUserCollateralInternal(msg.sender, amount);
     }
 
     /*** Safe Token ***/

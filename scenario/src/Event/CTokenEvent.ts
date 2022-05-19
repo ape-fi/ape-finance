@@ -59,6 +59,18 @@ async function accrueInterest(world: World, from: string, cToken: CToken): Promi
   return world;
 }
 
+async function registerCollateral(world: World, from: string, cToken: CToken): Promise<World> {
+  let invokation = await invoke(world, cToken.methods.registerCollateral(), from, CTokenErrorReporter);
+
+  world = addAction(
+    world,
+    `CToken ${cToken.name}: Register collateral`,
+    invokation
+  );
+
+  return world;
+}
+
 async function mint(world: World, from: string, cToken: CToken, amount: NumberV | NothingV): Promise<World> {
   let invokation;
   let showAmount;
@@ -610,6 +622,19 @@ export function cTokenCommands() {
         new Arg("cToken", getCTokenV)
       ],
       (world, from, { cToken }) => accrueInterest(world, from, cToken),
+      { namePos: 1 }
+    ),
+    new Command<{ cToken: CToken }>(`
+        #### RegisterCollateral
+
+        * "CToken <cToken> RegisterCollateral" - Register collateral
+          * E.g. "CToken cZRX RegisterCollateral"
+      `,
+      "RegisterCollateral",
+      [
+        new Arg("cToken", getCTokenV)
+      ],
+      (world, from, { cToken }) => registerCollateral(world, from, cToken),
       { namePos: 1 }
     ),
     new Command<{ cToken: CToken, amount: NumberV | NothingV }>(`
