@@ -544,4 +544,32 @@ describe('CTokenAdmin', () => {
       expect(await call(cTokenAdmin, 'reserveManager')).toEqual(reserveManager);
     });
   });
+
+  describe('redeem()', () => {
+    const exchangeRate = 50e3;
+    const redeemTokens = etherUnsigned(10e3);
+    const redeemAmount = redeemTokens.multipliedBy(exchangeRate);
+
+    beforeEach(async () => {
+      cToken = await makeCToken({admin: cTokenAdmin._address, supportMarket: true});
+      await send(cToken, 'harnessSetBalance', [cTokenAdmin._address, redeemTokens]);
+      await send(cToken, 'harnessSetTotalSupply', [redeemTokens]);
+      await send(cToken.underlying, 'harnessSetBalance', [cToken._address, redeemAmount]);
+      await send(cToken, 'harnessSetExchangeRate', [etherMantissa(exchangeRate)]);
+    });
+
+    it('should only be callable by admin', async () => {
+      await expect(send(cTokenAdmin, 'redeem', [cToken._address])).rejects.toRevert('revert only the admin may call this function');
+
+      expect(await call(cToken, 'balanceOf', [cTokenAdmin._address])).toEqualNumber(redeemTokens);
+      expect(await call(cToken.underlying, 'balanceOf', [cTokenAdmin._address])).toEqualNumber(0);
+    });
+
+    it('should succeed and redeem', async () => {
+      expect(await send(cTokenAdmin, 'redeem', [cToken._address], {from: admin})).toSucceed();
+
+      expect(await call(cToken, 'balanceOf', [cTokenAdmin._address])).toEqualNumber(0);
+      expect(await call(cToken.underlying, 'balanceOf', [cTokenAdmin._address])).toEqualNumber(redeemAmount);
+    });
+  });
 });
