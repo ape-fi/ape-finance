@@ -51,6 +51,7 @@ export interface CTokenMethods {
   _acceptAdmin(): Sendable<number>;
   gulp(): Sendable<void>;
   _setCollateralCap(amount: encodedNumber): Sendable<void>;
+  _setBorrowFee(amount: encodedNumber): Sendable<void>;
   accountCollateralTokens(account: string): Callable<number>;
   totalCollateralTokens(): Callable<number>;
   registerCollateral(): Sendable<number>;

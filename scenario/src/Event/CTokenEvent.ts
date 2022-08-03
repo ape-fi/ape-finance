@@ -395,6 +395,18 @@ async function setCollateralCap(world: World, from: string, cToken: CToken, cap:
   return world;
 }
 
+async function setBorrowFee(world: World, from: string, cToken: CToken, fee: NumberV): Promise<World> {
+  let invokation = await invoke(world, cToken.methods._setBorrowFee(fee.encode()), from, CTokenErrorReporter);
+
+  world = addAction(
+    world,
+    `Set borrow fee for ${cToken.name} to ${fee.show()}`,
+    invokation
+  );
+
+  return world;
+}
+
 async function becomeImplementation(
   world: World,
   from: string,
@@ -976,6 +988,19 @@ export function cTokenCommands() {
         new Arg("amount", getNumberV)
       ],
       (world, from, { cToken, amount }) => setCollateralCap(world, from, cToken, amount),
+      { namePos: 1 }
+    ),
+    new Command<{ cToken: CToken, amount: NumberV }>(`
+        #### SetBorrowFee
+        * "CToken <cToken> SetBorrowFee amount:<Number>" - Sets the borrow fee for the given cToken
+          * E.g. "CToken cZRX SetBorrowFee 0.1e18"
+      `,
+      "SetBorrowFee",
+      [
+        new Arg("cToken", getCTokenV),
+        new Arg("amount", getNumberV)
+      ],
+      (world, from, { cToken, amount }) => setBorrowFee(world, from, cToken, amount),
       { namePos: 1 }
     ),
     new Command<{
