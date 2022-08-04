@@ -330,6 +330,12 @@ contract BoolComptroller is ComptrollerInterface {
     function setCalculatedSeizeTokens(uint256 seizeTokens_) public {
         calculatedSeizeTokens = seizeTokens_;
     }
+
+    /*** Comptroller interface extension ***/
+
+    function isCreditAccount(address account, address apeToken) external view returns (bool) {
+        return false;
+    }
 }
 
 contract EchoTypesComptroller is UnitrollerAdminStorage {

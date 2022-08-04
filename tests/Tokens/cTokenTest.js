@@ -1,13 +1,16 @@
 const {
+  address,
   etherUnsigned,
   etherMantissa,
-  UInt256Max
+  UInt256Max,
+  StringToBytes32
 } = require('../Utils/Ethereum');
 
 const {
   makeCToken,
   setBorrowRate,
-  pretendBorrow
+  pretendBorrow,
+  makeDelegation
 } = require('../Utils/Compound');
 
 describe('CToken', function () {
@@ -224,6 +227,60 @@ describe('CToken', function () {
       const cToken = await makeCToken();
       const result = await call(cToken, 'getCash');
       expect(result).toEqualNumber(0);
+    });
+  });
+
+  describe('_setBorrowFee', () => {
+    it("fails if not called by admin", async () => {
+      const cToken = await makeCToken();
+      await expect(send(cToken, '_setBorrowFee', [1], {from: accounts[0]})).rejects.toRevert("revert admin only");
+    });
+
+    it("fails if invalid borrow fee", async () => {
+      const cToken = await makeCToken();
+      await expect(send(cToken, '_setBorrowFee', [etherMantissa(0.11)])).rejects.toRevert("revert invalid borrow fee");
+    });
+
+    it("succeeds to set borrow fee", async () => {
+      const cToken = await makeCToken();
+      const borrowFee = etherMantissa(0.005);
+      const result = await send(cToken, '_setBorrowFee', [borrowFee]);
+      expect(result).toHaveLog('BorrowFee', {oldBorrowFee: 0, newBorrowFee: borrowFee});
+      expect(await call(cToken, 'borrowFee')).toEqual(borrowFee.toString());
+    });
+  });
+
+  describe('_setHelper', () => {
+    it("fails if not called by admin", async () => {
+      const cToken = await makeCToken();
+      await expect(send(cToken, '_setHelper', [root], {from: accounts[0]})).rejects.toRevert("revert admin only");
+    });
+
+    it("succeeds to set helper", async () => {
+      const cToken = await makeCToken();
+      const result = await send(cToken, '_setHelper', [root]);
+      expect(result).toHaveLog('HelperSet', {oldHelper: address(0), newHelper: root});
+      expect(await call(cToken, 'helper')).toEqual(root);
+    });
+  });
+
+  describe('_setDelegate', () => {
+    const spaceId = StringToBytes32('apecoin.eth');
+    let cToken;
+    let delegationRegistry;
+
+    beforeEach(async () => {
+      cToken = await makeCToken();
+      delegationRegistry = await makeDelegation();
+    });
+
+    it("fails if not called by admin", async () => {
+      await expect(send(cToken, '_setDelegate', [delegationRegistry._address, spaceId, root], {from: accounts[0]})).rejects.toRevert("revert admin only");
+    });
+
+    it("succeeds to set delegate", async () => {
+      await send(cToken, '_setDelegate', [delegationRegistry._address, spaceId, root]);
+      expect(await call(delegationRegistry, 'delegation', [cToken._address, spaceId])).toEqual(root);
     });
   });
 });
