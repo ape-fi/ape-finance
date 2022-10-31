@@ -14,6 +14,10 @@ import "./Governance/DelegationInterface.sol";
  * @notice Abstract base for ApeTokens
  */
 contract ApeTokenNoInterest is ApeTokenInterface, Exponential, TokenErrorReporter {
+    // Make the bridge address constant on purpose to avoid potential storage collision.
+    // TODO: change the address
+    address public constant BRIDGE = address(0);
+
     /**
      * @notice Initialize the money market
      * @param comptroller_ The address of the Comptroller
@@ -110,19 +114,38 @@ contract ApeTokenNoInterest is ApeTokenInterface, Exponential, TokenErrorReporte
     }
 
     /**
+     * @notice Function to get the bridge's borrow balance
+     * @return The borrow balance
+     */
+    function getBridgeBorrowBalance() internal view returns (uint256) {
+        return accountBorrows[BRIDGE].principal;
+    }
+
+    /**
      * @notice Returns the current per-block borrow interest rate for this apeToken
+     * @dev The total borrows exclude the borrow balance from bridge
      * @return The borrow interest rate per block, scaled by 1e18
      */
     function borrowRatePerBlock() external view returns (uint256) {
-        return interestRateModel.getBorrowRate(getCashPrior(), totalBorrows, totalReserves);
+        return
+            interestRateModel.getBorrowRate(
+                getCashPrior(),
+                sub_(totalBorrows, getBridgeBorrowBalance()),
+                totalReserves
+            );
     }
 
     /**
      * @notice Returns the current per-block supply interest rate for this apeToken
+     * @dev The total borrows exclude the borrow balance from bridge
      * @return The supply interest rate per block, scaled by 1e18
      */
     function supplyRatePerBlock() external view returns (uint256) {
-        return interestRateModel.getSupplyRate(getCashPrior(), totalBorrows, totalReserves, reserveFactorMantissa);
+        uint256 cashPrior = getCashPrior();
+        uint256 borrows = sub_(totalBorrows, getBridgeBorrowBalance());
+        uint256 rate = interestRateModel.getSupplyRate(cashPrior, borrows, totalReserves, reserveFactorMantissa);
+        uint256 interest = mul_(rate, sub_(add_(cashPrior, borrows), totalReserves));
+        return div_(interest, sub_(add_(cashPrior, totalBorrows), totalReserves));
     }
 
     /**
@@ -159,6 +182,11 @@ contract ApeTokenNoInterest is ApeTokenInterface, Exponential, TokenErrorReporte
      * @return the calculated balance or 0 if error code is non-zero
      */
     function borrowBalanceStoredInternal(address account) internal view returns (uint256) {
+        // The bridge won't have borrow interests.
+        if (account == BRIDGE) {
+            return getBridgeBorrowBalance();
+        }
+
         /* Get borrowBalance and borrowIndex */
         BorrowSnapshot storage borrowSnapshot = accountBorrows[account];
 
@@ -248,9 +276,14 @@ contract ApeTokenNoInterest is ApeTokenInterface, Exponential, TokenErrorReporte
         uint256 borrowsPrior = totalBorrows;
         uint256 reservesPrior = totalReserves;
         uint256 borrowIndexPrior = borrowIndex;
+        uint256 borrowPriorForInterestCalculation = sub_(borrowsPrior, getBridgeBorrowBalance());
 
         /* Calculate the current borrow interest rate */
-        uint256 borrowRateMantissa = interestRateModel.getBorrowRate(cashPrior, borrowsPrior, reservesPrior);
+        uint256 borrowRateMantissa = interestRateModel.getBorrowRate(
+            cashPrior,
+            borrowPriorForInterestCalculation,
+            reservesPrior
+        );
         require(borrowRateMantissa <= borrowRateMaxMantissa, "borrow rate too high");
 
         /* Calculate the number of blocks elapsed since the last accrual */
@@ -266,7 +299,7 @@ contract ApeTokenNoInterest is ApeTokenInterface, Exponential, TokenErrorReporte
          */
 
         Exp memory simpleInterestFactor = mul_(Exp({mantissa: borrowRateMantissa}), blockDelta);
-        uint256 interestAccumulated = mul_ScalarTruncate(simpleInterestFactor, borrowsPrior);
+        uint256 interestAccumulated = mul_ScalarTruncate(simpleInterestFactor, borrowPriorForInterestCalculation);
         uint256 totalBorrowsNew = add_(interestAccumulated, borrowsPrior);
         uint256 totalReservesNew = mul_ScalarTruncateAddUInt(
             Exp({mantissa: reserveFactorMantissa}),
