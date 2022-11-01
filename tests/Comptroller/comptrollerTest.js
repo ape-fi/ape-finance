@@ -321,6 +321,25 @@ describe('Comptroller', () => {
     });
   });
 
+  describe('_setOnlySupplier', () => {
+    it('fails if not called by admin', async () => {
+      const cToken = await makeCToken(root);
+      await expect(send(cToken.comptroller, '_setOnlySupplier', [cToken._address, accounts[0]], {from: accounts[0]})).rejects.toRevert('revert only admin could set only supplier');
+    });
+
+    it('fails if market not listed', async () => {
+      const cToken = await makeCToken(root);
+      await expect(send(cToken.comptroller, '_setOnlySupplier', [cToken._address, accounts[0]])).rejects.toRevert('revert market not listed');
+    });
+
+    it('succeeds and sets only supplier', async () => {
+      const cToken = await makeCToken(root);
+      expect(await send(cToken.comptroller, '_supportMarket', [cToken._address])).toSucceed();
+      const result = await send(cToken.comptroller, '_setOnlySupplier', [cToken._address, accounts[0]]);
+      expect(result).toHaveLog('OnlySupplierSet', {market: cToken._address, supplier: accounts[0]});
+    });
+  });
+
   describe('redeemVerify', () => {
     it('should allow you to redeem 0 underlying for 0 tokens', async () => {
       const comptroller = await makeComptroller();

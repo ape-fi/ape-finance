@@ -274,6 +274,18 @@ async function setGuardianMarketPaused(world: World, from: string, comptroller: 
   return world;
 }
 
+async function setOnlySupplier(world: World, from: string, comptroller: Comptroller, market: string, onlySupplier: string): Promise<World> {
+  let invokation = await invoke(world, comptroller.methods._setOnlySupplier(market, onlySupplier), from, ComptrollerErrorReporter);
+
+  world = addAction(
+    world,
+    `Comptroller: ${describeUser(world, from)} sets ${market}'s only supplier to ${onlySupplier}`,
+    invokation
+  );
+
+  return world;
+}
+
 async function setMarketSupplyCaps(world: World, from: string, comptroller: Comptroller, cTokens: CToken[], supplyCaps: NumberV[]): Promise<World> {
   let invokation = await invoke(world, comptroller.methods._setMarketSupplyCaps(cTokens.map(c => c._address), supplyCaps.map(c => c.encode())), from, ComptrollerErrorReporter);
 
@@ -519,6 +531,21 @@ export function comptrollerCommands() {
           new Arg("isPaused", getBoolV)
         ],
         (world, from, {comptroller, cToken, action, isPaused}) => setGuardianMarketPaused(world, from, comptroller, cToken, action.val, isPaused.val)
+    ),
+
+    new Command<{comptroller: Comptroller, market: AddressV, onlySupplier: AddressV}>(`
+        #### SetOnlySupplier
+
+        * "Comptroller SetOnlySupplier <Market> <OnlySupplier>" - Sets the only supplier of a market
+        * E.g. "Comptroller SetOnlySupplier cREP Geoff
+        `,
+        "SetOnlySupplier",
+        [
+          new Arg("comptroller", getComptroller, {implicit: true}),
+          new Arg('market', getAddressV),
+          new Arg('onlySupplier', getAddressV),
+        ],
+        (world, from, {comptroller, market, onlySupplier}) => setOnlySupplier(world, from, comptroller, market.val, onlySupplier.val)
     ),
 
     new Command<{comptroller: Comptroller, blocks: NumberV, _keyword: StringV}>(`
